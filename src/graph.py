@@ -47,8 +47,7 @@ class Directed(Graph):
 
     def __setitem__(self, node: Node, neighborhood: Neighborhood | None = None):
         """Just remove the self-edge if any."""
-        if neighborhood is None:
-            return
+        neighborhood = neighborhood or Neighborhood()
 
     #   Remove self-edge.
         neighborhood.discard(node)
@@ -58,10 +57,7 @@ class Directed(Graph):
     @classmethod
     def fromkeys(cls, nodes: Iterable[Node], neighborhood: Neighborhood | None = None):
         """Make graph from node iterable and given default neighborhood."""
-        if neighborhood is None:
-            neighborhood = Neighborhood()
-
-        return Directed(Graph.fromkeys(nodes, neighborhood))
+        return Directed(Graph.fromkeys(nodes, neighborhood or Neighborhood()))
 
 
 class Undirected(Directed):
@@ -74,12 +70,9 @@ class Undirected(Directed):
     #   Add missing symmetric edges.
         self.update(self.copy())
 
-        pass
-
     def __setitem__(self, node: Node, neighborhood: Neighborhood | None = None):
         """Add node with a neighborhood of nodes by adding the missing symmetric edges and removing possible self-edge."""
-        if neighborhood is None:
-            return
+        neighborhood = neighborhood or Neighborhood()
 
     #   Remove self-edge.
         neighborhood.discard(node)
@@ -93,19 +86,13 @@ class Undirected(Directed):
         self.pop(node)
 
     @classmethod
-    def fromkeys(cls, nodes: Iterable[Node], neighborhood: Neighborhood | None = None):
+    def fromkeys(cls, nodes: Iterable[Node], default_neighborhood: Neighborhood | None = None):
         """Make graph from node iterable and given default neighborhood. Add the missing symmetric edges."""
-        if neighborhood is None:
-            return {}
+        return Undirected(super(Undirected, cls).fromkeys(nodes, default_neighborhood or Neighborhood()))
 
-        return Undirected(super(Undirected, cls).fromkeys(nodes, neighborhood))
-
-    def setdefault(self, node: Node, neighborhood: Neighborhood | None = None) -> Neighborhood:
+    def setdefault(self, node: Node, default_neighborhood: Neighborhood | None = None) -> Neighborhood:
         """Redefine `setdefault` with empty set value default."""
-        if neighborhood is None:
-            neighborhood = Neighborhood()
-
-        return super(Undirected, self).setdefault(node, neighborhood)
+        return super(Undirected, self).setdefault(node, default_neighborhood or Neighborhood())
 
     def add(self, node: Node, neighbohood: Neighborhood):
         """Add to node or make from scratch if not in graph."""
@@ -120,29 +107,19 @@ class Undirected(Directed):
         for node, neighbohood in graph.items():
             self.add(node, neighbohood)  # Add node with neighborhood, symmetrically.
 
-    def get(self, node: Node, neighborhood: Neighborhood | None = None) -> Neighborhood:
+    def get(self, node: Node, default_neighborhood: Neighborhood | None = None) -> Neighborhood:
         """Redefine `get` with empty set value default."""
-        if neighborhood is None:
-            neighborhood = Neighborhood()
+        return super(Undirected, self).get(node, default_neighborhood or Neighborhood())
 
-        return super(Undirected, self).get(node, neighborhood)
-
-    def pop(self, node: Node, neighborhood: Neighborhood | None = None) -> Neighborhood:
+    def pop(self, node: Node, default_neighborhood: Neighborhood | None = None) -> Neighborhood:  # type: ignore
         """Delete node with neighborhood and return neighborhood."""
-        if neighborhood is None:
-            neighborhood = Neighborhood()
-
-        neighborhood = super(Undirected, self).pop(node, neighborhood)
+        neighborhood = super(Undirected, self).pop(node, default_neighborhood or Neighborhood())
 
     #   Remove symmetric edges.
-        for adjacent_node in neighborhood:  # type: ignore
+        for adjacent_node in neighborhood:
             self[adjacent_node].discard(node)  # Remove traces of node in adjacent nodes.
 
-        #   If node is drained of neighbors, destroy it.
-            if not self[adjacent_node]:
-                super(Undirected, self).pop(adjacent_node)
-
-        return neighborhood  # type: ignore
+        return neighborhood
 
     def popitem(self) -> tuple[Node, Neighborhood]:
         """Delete last added node and neighborhood and return them."""

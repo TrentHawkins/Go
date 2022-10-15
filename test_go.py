@@ -143,4 +143,4 @@ class TestUndirected(TestCase):
 
     #   Popping item should be using pop?
         assert graph.popitem() == (2, {1})  # popitems returns the popped items (key and value)
-        assert graph == {}  # The symmetric edge should be missing too. NOTE: It does not, because it is written in C.
+        assert 2 not in graph[1]  # The symmetric edge should be missing too. NOTE: It does not, because it is written in C.
