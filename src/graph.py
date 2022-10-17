@@ -29,13 +29,56 @@ Undirected graph requires overriding some methods to account for symmetric edges
 from dataclasses import dataclass
 from typing import Hashable, Iterable
 
-Node = Hashable  # The nodes. Have to be hashable to be used as keys.
-Neighborhood = set[Node]  # A connectible neiborhood lacking an origin. Forms edges with a given origin.
-Graph = dict[Node, Neighborhood]  # The form of a graph, generally directed.
+Node = Hashable  # Node type to be hashable to be used as keys.
+Nodes = frozenset[Node]  # A cluster of nodes.
+Clusters = set[Nodes]  # A collection of clusters.
+Neighborhood = set[Node]  # The neighborhood of a node. Forms edges given the node.
+
+Edge = tuple[Node, Node]  # An edge is a pair of nodes.
+Edges = frozenset[Edge]  # An edge list.
+
+Graph = dict[Node, Neighborhood]  # A graph as sets of neighborhoods keyed by their node.
 
 
 class Directed(Graph):
-    """Directed graph."""
+    """Directed graph.
+
+    Implements dictionary methods on graph-level and set methods on node and neighborhood levels.
+
+    Neighborhood set operations on nodes:
+        | : Unite graph with another.
+        - : Subtract graph from current.
+        & : Intersect graph with another.
+        ^ : Complement graph union with graph intersection.
+
+    Neighborhood set comparisons and their strict counterparts on nodes:
+        <= :  If current a subgraph of the other.
+        >= :  If current a supergraph of the other.
+
+    Alternative graph constructors:
+        fromkeys: Make graph from node iterable and given default neighborhood.
+        from_adgacency_matrix: Make graph from matrix marking connected nodes.
+        from_edge_list: Make graph from list of pairs of (connected) nodes.
+
+    Fundamental methods for operations:
+        setdefault: Redefine `dict.setdefault` with empty neighborhood as default.
+        get: Redefine `dict.get` with empty empty neighborhood as default.
+        add: Add or update node with neighborhood.
+        clear: Clear unused (disconnected) nodes.
+
+    Backend methods for operations:
+        union/update: Unite graph with another.
+        difference/difference update: Subtract graph from current.
+        intersection/intersection_update: Intersect graph with another.
+        symmetric_difference/symmetric_difference_update: Complement graph union with graph intersection.
+        issubset:  If current a subgraph of the other.
+        issuperset:  If current a supergraph of the other.
+
+    Graph special methods:
+        edge_list: List edges in graph as pairs of connected nodes.
+        adjacency_matrix: Form matrix with marking connected nodes.
+        clusters: List sets of nodes that are connected internally but disconnected with one another.
+    """
 
     def __init__(self, *args, **kwargs):
         """Update graph by removing self-edges."""
@@ -46,7 +89,7 @@ class Directed(Graph):
             self[node].discard(node)
 
     def __setitem__(self, node: Node, neighborhood: Neighborhood | None = None):
-        """Just remove the self-edge if any."""
+        """Add node with a neighborhood of nodes by removing possible self-edge."""
         neighborhood = neighborhood or Neighborhood()
 
     #   Remove self-edge.
@@ -54,35 +97,216 @@ class Directed(Graph):
 
         super(Directed, self).__setitem__(node, neighborhood)
 
+    """Neighborhood set operations on nodes:
+        | : Unite graph with another.
+        - : Subtract graph from current.
+        & : Intersect graph with another.
+        ^ : Complement graph union with graph intersection.
+    """
+
+    def __ior__(self, other):
+        """Unite graph with another in-place."""
+        self.update(other)
+
+    def __or__(self, other):
+        """Unite graph with another."""
+        return self.union(other)
+
+    def __isub__(self, other):
+        """Subtract graph from current in-place."""
+        self.difference_update(other)
+
+    def __sub__(self, other):
+        """Subtract graph from current."""
+        return self.difference(other)
+
+    def __iand__(self, other):
+        """Intersect graph with another in-place."""
+        self.intersection_update(other)
+
+    def __and__(self, other):
+        """Intersect graph with another."""
+        return self.intersection(other)
+
+    def __ixor__(self, other):
+        """Complement graph union with graph intersection in-place."""
+        self.symmetric_difference_update(other)
+
+    def __xor__(self, other):
+        """Complement graph union with graph intersection."""
+        return self.symmetric_difference(other)
+
+    """Neighborhood set comparisons and their strict counterparts on nodes:
+        <= :  If current a subgraph of the other.
+        >= :  If current a supergraph of the other.
+    """
+
+    def __le__(self, other):
+        """Is current a subgraph of the other."""
+        return self.issubset(other)
+
+    def __ge__(self, other):
+        """Is current a supergraph of the other."""
+        return self.issuperset(other)
+
+    def __lt__(self, other):
+        """Is current a strict subgraph of the other."""
+        return self <= other and self != other
+
+    def __gt__(self, other):
+        """Is current a strict supergraph of the other."""
+        return self >= other and self != other
+
+    """Alternative graph constructors:
+        fromkeys: Make graph from node iterable and given default neighborhood.
+        from_edge_list: Make graph from list of pairs of (connected) nodes.
+    """
+
     @classmethod
-    def fromkeys(cls, nodes: Iterable[Node], neighborhood: Neighborhood | None = None):
+    def fromkeys(cls, nodes: Neighborhood, neighborhood: Neighborhood | None = None):
         """Make graph from node iterable and given default neighborhood."""
-        return Directed(Graph.fromkeys(nodes, neighborhood or Neighborhood()))
+        return cls(Graph.fromkeys(nodes, neighborhood or Neighborhood()))
 
     @classmethod
-    def from_adjacency_matrix(cls, edges: Iterable[Iterable[Node]]):
-        """Make graph from adjacency matrix."""
-        return Undirected({node: Neighborhood(neighborhood)} for node, neighborhood in enumerate(edges))
+    def from_edge_list(cls, edge_list: Edges):
+        """Make graph from list of pairs of (connected) nodes."""
+        graph = cls()
 
-    @classmethod
-    def from_edge_list(cls, edges: Iterable[tuple[Node, Node]]):
-        """Make graph from edge lsit."""
-        undirected = Undirected()
+    #   Add edges one by one to the corresponding neighborhood.
+        for node, adjacent_node in edge_list:
+            graph.update({node: {adjacent_node}})
 
-        for node, adjacent_node in edges:
-            undirected.update({node: {adjacent_node}})
+        return graph
+
+    """Fundamental methods for operations:
+        setdefault: Redefine `dict.setdefault` with empty neighborhood as default.
+        get: Redefine `dict.get` with empty empty neighborhood as default.
+        add: Add or update node with neighborhood.
+        clear: Clear unused (disconnected) nodes.
+    """
 
     def setdefault(self, node: Node, default_neighborhood: Neighborhood | None = None) -> Neighborhood:
-        """Redefine `setdefault` with empty set value default."""
+        """Redefine dictionary `dict.setdefault` with empty neighborhood as default."""
         return super(Directed, self).setdefault(node, default_neighborhood or Neighborhood())
 
     def get(self, node: Node, default_neighborhood: Neighborhood | None = None) -> Neighborhood:
-        """Redefine `get` with empty set value default."""
+        """Redefine `get` with empty empty neighborhood as default."""
         return super(Directed, self).get(node, default_neighborhood or Neighborhood())
+
+    def add(self, node: Node, neighbohood: Neighborhood):
+        """Add or update node with neighborhood."""
+        self.setdefault(node).update(neighbohood)
+
+    def clear(self):
+        """Clear unused (disconnected) nodes."""
+        for node in self:
+            if not self[node]:
+                del self[node]
+
+    """Backend methods for operations:
+        union/update: Unite graph with another.
+        difference/difference update: Subtract graph from current.
+        intersection/intersection_update: Intersect graph with another.
+        symmetric_difference/symmetric_difference_update: Complement graph union with graph intersection.
+        issubset:  If current a subgraph of the other.
+        issuperset:  If current a supergraph of the other.
+    """
+
+    def update(self, other):
+        """Unite graph with another in-place."""
+        for node, neighbohood in other.items():
+            self.add(node, neighbohood)  # Add node with neighborhood, symmetrically.
+
+    def union(self, other):
+        """Unite graph with another."""
+        undirected = self.__class__(self.copy())
+        undirected.update(other)
+
+        return undirected
+
+    def difference_update(self, other):
+        """Subtract graph from current in-place."""
+        for node, neighbohood in other.items():
+            self.pop(node, neighbohood)  # Add node with neighborhood, symmetrically.
+
+    def difference(self, other):
+        """Subtract graph from current."""
+        undirected = self.__class__(self.copy())
+        undirected.difference_update(other)
+
+        return undirected
+
+    def intersection_update(self, other):
+        """Intersect graph with another in-place in-place."""
+        self.difference_update(self.difference(other))
+
+    def intersection(self, other):
+        """Intersect graph with another in-place."""
+        return self.difference(self.difference(other))
+
+    def symmetric_difference_update(self, other):
+        """Complement graph union with graph intersection in-place."""
+        self.update(other)
+        self.difference_update(self.intersection(other))
+
+    def symmetric_difference(self, other):
+        """Complement graph union with graph intersection."""
+        return self.union(other).difference(self.intersection(other))
+
+    def issubset(self, other):
+        """Check if the current graph is a subgraph of the other graph."""
+        return Neighborhood(self.keys()).issubset(Neighborhood(other.keys())) \
+            and all(self.get(node).issubset(other[node]) for node in other)
+
+    def issuperset(self, other):
+        """Check if the current graph is a supergraph of the other graph."""
+        return Neighborhood(self.keys()).issuperset(Neighborhood(other.keys())) \
+            and all(self[node].issuperset(other.get(node)) for node in self)
+
+    """Graph special methods:
+        edge_list: List edges in graph as pairs of connected nodes.
+        clusters: List disjoint clusters of inter-connected nodes
+    """
+
+    @property
+    def edge_list(self) -> Edges:
+        """List edges in graph as pairs of connected nodes."""
+        return Edges((node, adjacent_node) for node in self for adjacent_node in self)
+
+    @property
+    def clusters(self) -> Clusters:
+        """List disjoint subgraphs of inter-connected nodes."""
+        copy = self.__class__(self.copy())
+        clusters = Clusters()
+
+    #   Recursive cluster scanning:
+        def cluster(node: Node) -> Nodes:
+            nodes = Neighborhood()
+            nodes.add(node)
+
+        #   Get next nodes to search:
+            neighborhood = copy.pop(node)
+
+        #   If there is more to search, enter and repeat:
+            if neighborhood:
+                for adjacent_node in neighborhood:
+                    nodes.update(cluster(adjacent_node))
+
+            return Nodes(nodes)
+
+    #   For every node in graph, if still alive from cluster hunting, scan (new) cluster.
+        for node in self:
+            if copy.get(node):
+                clusters.add(cluster(node))
+
+        return clusters
 
 
 class Undirected(Directed):
-    """Undirected graph."""
+    """Undirected graph.
+
+    Implement `Directed` methods to include symmetric edge operations where necessary.
+    """
 
     def __init__(self, *args, **kwargs):
         """Update graph with missing symmetric edges and by removing self-edges."""
@@ -103,64 +327,16 @@ class Undirected(Directed):
         self.add(node, neighborhood)
 
     def __delitem__(self, node: Node):
-        """Delete node with its neighborhood of nodes and all symmetric edges. Node has to be there."""
+        """Delete node with its neighborhood of nodes and all symmetric edges. Node has exist."""
         self.pop(node)
 
-    def __ior__(self, other):
-        """Unite graph with another."""
-        self.update(other)
-
-    def __or__(self, other):
-        """Unite graph with another."""
-        return self.union(other)
-
-    def __isub__(self, other):
-        """Subtract graph from this one."""
-        self.difference_update(other)
-
-    def __sub__(self, other):
-        """Subtract graph from this one."""
-        return self.difference(other)
-
-    def __iand__(self, other):
-        """Intersect graph with another."""
-        self.intersection_update(other)
-
-    def __and__(self, other):
-        """Intersect graph with another."""
-        return self.intersection(other)
-
-    def __ixor__(self, other):
-        """Complement union with intersection."""
-        self.symmetric_difference_update(other)
-
-    def __xor__(self, other):
-        """Complement union with intersection."""
-        return self.symmetric_difference(other)
-
-    def __le__(self, other):
-        """Is current a subgraph of the other."""
-        return self.issubset(other)
-
-    def __ge__(self, other):
-        """Is current a supergraph of the other."""
-        return self.issuperset(other)
-
-    def __lt__(self, other):
-        """Is current a subgraph of the other."""
-        return self <= other and self != other
-
-    def __gt__(self, other):
-        """Is current a supergraph of the other."""
-        return self >= other and self != other
-
-    @classmethod
-    def fromkeys(cls, nodes: Iterable[Node], default_neighborhood: Neighborhood | None = None):
-        """Make graph from node iterable and given default neighborhood. Add the missing symmetric edges."""
-        return Undirected(super(Undirected, cls).fromkeys(nodes, default_neighborhood or Neighborhood()))
+    """Fundamental methods for operations:
+        add: Add or update node with neighborhood and symmetric edges.
+        pop: Delete node with neighborhood and symmetric edges and return neighborhood.
+    """
 
     def add(self, node: Node, neighbohood: Neighborhood):
-        """Add to node or make from scratch if not in graph."""
+        """Add or update node with neighborhood and symmetric edges."""
         self.setdefault(node).update(neighbohood)
 
     #   Add symmetric edges.
@@ -168,7 +344,7 @@ class Undirected(Directed):
             self.setdefault(adjacent_node).add(node)
 
     def pop(self, node: Node, default_neighborhood: Neighborhood | None = None) -> Neighborhood:  # type: ignore
-        """Delete node with neighborhood and return neighborhood."""
+        """Delete node with neighborhood and symmetric edges and return neighborhood."""
         neighborhood = super(Undirected, self).pop(node, default_neighborhood or Neighborhood())
 
     #   Remove symmetric edges.
@@ -182,60 +358,3 @@ class Undirected(Directed):
         node, neighborhood = super(Undirected, self).popitem()
 
         return node, self.pop(node, neighborhood)  # Remove traces of popped node from adjacent nodes.
-
-    def update(self, other):
-        """Unite graph with another."""
-        for node, neighbohood in other.items():
-            self.add(node, neighbohood)  # Add node with neighborhood, symmetrically.
-
-    def union(self, other):
-        """Unite graph with another."""
-        undirected = Undirected(self.copy())
-        undirected.update(other)
-
-        return undirected
-
-    def difference_update(self, other):
-        """Subtract graph from this one."""
-        for node, neighbohood in other.items():
-            self.pop(node, neighbohood)  # Add node with neighborhood, symmetrically.
-
-    def difference(self, other):
-        """Subtract graph from this one."""
-        undirected = Undirected(self.copy())
-        undirected.difference_update(other)
-
-        return undirected
-
-    def intersection_update(self, other):
-        """Intersect graph with another."""
-        self.difference_update(self.difference(other))
-
-    def intersection(self, other):
-        """Intersect graph with another."""
-        return self.difference(self.difference(other))
-
-    def symmetric_difference_update(self, other):
-        """Complement union with intersection."""
-        self.update(other)
-        self.difference_update(self.intersection(other))
-
-    def symmetric_difference(self, other):
-        """Complement union with intersection."""
-        return self.union(other).difference(self.intersection(other))
-
-    def clear(self):
-        """Clear unused (isolated) nodes."""
-        for node in self:
-            if not self[node]:
-                del self[node]
-
-    def issubset(self, other):
-        """Check if the current graph is a subgraph of the other graph."""
-        return Neighborhood(self.keys()).issubset(Neighborhood(other.keys())) \
-            and all(self.get(node).issubset(other[node]) for node in other)
-
-    def issuperset(self, other):
-        """Check if the current graph is a supergraph of the other graph."""
-        return Neighborhood(self.keys()).issuperset(Neighborhood(other.keys())) \
-            and all(self[node].issuperset(other.get(node)) for node in self)
