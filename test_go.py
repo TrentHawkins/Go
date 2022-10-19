@@ -135,7 +135,7 @@ class TestUndirected(TestCase):
         assert 4 not in graph
         assert 4 not in graph[2]  # The symmetric edge should be missing too.
 
-    #   Popping should be using deletion:
+    #   Popping should be using deletion.
         assert graph.pop(4, {1, 2, 3}) == {1, 2, 3}  # 4 is no longer a node so return the default given.
         assert graph.pop(3) == {1}  # pop returns the popped value
         assert 3 not in graph
@@ -144,3 +144,94 @@ class TestUndirected(TestCase):
     #   Popping item should be using pop?
         assert graph.popitem() == (2, {1})  # popitems returns the popped items (key and value)
         assert 2 not in graph[1]  # The symmetric edge should be missing too. NOTE: It does not, because it is written in C.
+
+    #   Clear isolated nodes.
+        graph.clear()
+        assert graph == Undirected()
+
+    def test_special(self):
+        """Test methods related to clustering and edge listing."""
+        from src.graph import Clusters, Edges, Neighborhood, Nodes, Undirected
+
+        graph = Undirected(
+            {
+                1: {
+                    2,
+                    3,
+                    4,
+                },
+                5: {
+                    6,
+                    7,
+                },
+                8: {
+                    9,
+                },
+                0: Neighborhood()
+            }
+        )
+
+    #   Assert disconnected nodes are allowed.
+        assert graph[0] == Neighborhood()
+
+    #   Assert clusters are as indicated by the directed initialization of this undirected graph.
+        assert graph.clusters == Clusters(
+            {
+                Nodes(
+                    {
+                        1,
+                        2,
+                        3,
+                        4,
+                    }
+                ),
+                Nodes(
+                    {
+                        5,
+                        6,
+                        7,
+                    }
+                ),
+                Nodes(
+                    {
+                        8,
+                        9,
+                    }
+                ),
+                Nodes(
+                    {
+                        0,
+                    }
+                ),
+            }
+        )
+
+    #   Assert nodes belong to their clusters.
+        for node in graph:
+            assert node in graph.cluster(node)
+
+    #   Check edgelist.
+        assert graph.edge_list == Edges(
+            {
+                (1, 2), (2, 1),
+                (1, 3), (3, 1),
+                (1, 4), (4, 1),
+                (5, 6), (6, 5),
+                (5, 7), (7, 5),
+                (8, 9), (9, 8),
+            }
+        )
+
+    #   Check edgelist is the same even after clearing isolated nodes.
+        graph.clear()
+        assert 0 not in graph
+        assert graph.edge_list == Edges(
+            {
+                (1, 2), (2, 1),
+                (1, 3), (3, 1),
+                (1, 4), (4, 1),
+                (5, 6), (6, 5),
+                (5, 7), (7, 5),
+                (8, 9), (9, 8),
+            }
+        )

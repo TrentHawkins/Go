@@ -199,7 +199,7 @@ class Directed(Graph):
 
     def clear(self):
         """Clear unused (disconnected) nodes."""
-        for node in self:
+        for node in self.copy():
             if not self[node]:
                 del self[node]
 
@@ -265,41 +265,34 @@ class Directed(Graph):
 
     """Graph special methods:
         edge_list: List edges in graph as pairs of connected nodes.
-        clusters: List disjoint clusters of inter-connected nodes
+        cluster: Get cluster node belong to.
+        clusters: List disjoint clusters of inter-connected nodes.
+        Boundary: Collect all nodes not in the cluster but connected to it.
     """
 
     @property
     def edge_list(self) -> Edges:
         """List edges in graph as pairs of connected nodes."""
-        return Edges((node, adjacent_node) for node in self for adjacent_node in self)
+        return Edges((node, adjacent_node) for node in self for adjacent_node in self[node])
+
+    def cluster(self, node: Node) -> Nodes:
+        """Get cluster node belong to."""
+        neighborhood = self.pop(node)
+        nodes = {node}.union(*(self.cluster(adjacent_node) for adjacent_node in neighborhood))
+
+    #   Stich graph back up when done (back-propagation)
+        self.add(node, neighborhood)
+
+        return Nodes(nodes)
 
     @property
     def clusters(self) -> Clusters:
         """List disjoint subgraphs of inter-connected nodes."""
-        copy = self.__class__(self.copy())
-        clusters = Clusters()
+        return Clusters(self.cluster(node) for node in self)
 
-    #   Recursive cluster scanning:
-        def cluster(node: Node) -> Nodes:
-            nodes = Neighborhood()
-            nodes.add(node)
-
-        #   Get next nodes to search:
-            neighborhood = copy.pop(node)
-
-        #   If there is more to search, enter and repeat:
-            if neighborhood:
-                for adjacent_node in neighborhood:
-                    nodes.update(cluster(adjacent_node))
-
-            return Nodes(nodes)
-
-    #   For every node in graph, if still alive from cluster hunting, scan (new) cluster.
-        for node in self:
-            if copy.get(node):
-                clusters.add(cluster(node))
-
-        return clusters
+    def boundary(self, cluster: Nodes) -> Nodes:
+        """Get all nodes not in the cluster but connected to it."""
+        return Nodes().union(*(self[node] for node in cluster)).difference(cluster)
 
 
 class Undirected(Directed):
