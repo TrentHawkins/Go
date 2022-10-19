@@ -9,7 +9,7 @@ class TestUndirected(TestCase):
 
     def test_init(self):
         """Test graph creation."""
-        from src.graph import Undirected
+        from src.graph import Neighborhood, Undirected
 
         graph = Undirected.fromkeys(
             {
@@ -18,6 +18,17 @@ class TestUndirected(TestCase):
                 3,
             }
         )
+
+    #   Assert graph with isolated nodes is built.
+        for node in graph:
+            assert graph[node] == Neighborhood()
+
+    #   Graph will be empty after clearing, as no pair of nodes is connected.
+        graph.clear()
+        assert graph == Undirected()
+
+    #   Graph should be reproducible from its own edgelist.
+        assert graph == Undirected.from_edge_list(graph.edge_list)
 
     def test_set(self):
         """Test setting and updating methods."""
