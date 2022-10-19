@@ -1,11 +1,42 @@
 """Tests for Go engine."""
 
 
-from unittest import TestCase
+class TestIntersections:
+    """Test intersection operations."""
+
+    def test_init(self):
+        """Test proper generation of intersections."""
+        from src.intersection import Intersection
+
+    #   Assert size does stay positive.
+        assert Intersection(0, 0, -9).size == 9
+
+    #   Boundary checks inside board limits.
+        assert Intersection(-1, +1, 1)
+
+    #   Boundary checks outside board limits.
+        assert not Intersection(-2, +1, 1)
+        assert not Intersection(-1, +2, 1)
+
+    def test_operations(self):
+        """Test intersection vector operations."""
+        from src.intersection import Intersection
+
+    #   Binary operations:
+        assert Intersection(-1, +2, 0) + Intersection(-3, +4, 0) == Intersection(-4, +6, 0)
+        assert Intersection(-1, +2, 0) - Intersection(-3, +4, 0) == Intersection(+2, -2, 0)
+
+    #   Multiplication:
+        assert Intersection(-1, +2, 0) * 2 == Intersection(-2, +4, 0)
+        assert 2 * Intersection(-3, +4, 0) == Intersection(-6, +8, 0)
+
+    #   Unary operations:
+        assert +Intersection(-1, +2, 0) == Intersection(-1, +2, 0)
+        assert -Intersection(-3, +4, 0) == Intersection(+3, -4, 0)
 
 
-class TestUndirected(TestCase):
-    """Test Graph objects."""
+class TestUndirected:
+    """Test (undirected) Graph objects."""
 
     def test_init(self):
         """Test graph creation."""
