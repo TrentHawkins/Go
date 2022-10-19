@@ -11,32 +11,32 @@ class TestStone:
     #   Assert intersections are properly hashed.
         assert len(
             {
-                Stone((-1, +1), color="white"),
-                Stone((+1, -1), color="black"),
-                Stone((00, 00)),
+                Stone(-1, +1, color="white"),
+                Stone(+1, -1, color="black"),
+                Stone(00, 00),
             }
         ) == 3
 
     #   Same color means friends even on a different intersection.
-        assert Stone((-1, +1), color="white") == Stone((+1, -1), color="white")
-        assert Stone((-1, +1), color="black") == Stone((+1, -1), color="black")
-        assert Stone((-1, +1), color="empty") == Stone((+1, -1), color="empty")
+        assert Stone(-1, +1, color="white") == Stone(+1, -1, color="white")
+        assert Stone(-1, +1, color="black") == Stone(+1, -1, color="black")
+        assert Stone(-1, +1, color="empty") == Stone(+1, -1, color="empty")
 
     #   Different color means foes even on the same intersection.
-        assert Stone((00, 00), color="white") != Stone((00, 00), color="black")
-        assert Stone((00, 00), color="black") != Stone((00, 00), color="white")
+        assert Stone(00, 00, color="white") != Stone(00, 00, color="black")
+        assert Stone(00, 00, color="black") != Stone(00, 00, color="white")
 
     #   Empty is not friend:
-        assert not Stone((00, 00), color="white") == Stone((00, 00), color="empty")
-        assert not Stone((00, 00), color="black") == Stone((00, 00), color="empty")
-        assert not Stone((00, 00), color="empty") == Stone((00, 00), color="white")
-        assert not Stone((00, 00), color="empty") == Stone((00, 00), color="black")
+        assert not Stone(00, 00, color="white") == Stone(00, 00, color="empty")
+        assert not Stone(00, 00, color="black") == Stone(00, 00, color="empty")
+        assert not Stone(00, 00, color="empty") == Stone(00, 00, color="white")
+        assert not Stone(00, 00, color="empty") == Stone(00, 00, color="black")
 
     #   Empty is not foe:
-        assert not Stone((00, 00), color="white") != Stone((00, 00), color="empty")
-        assert not Stone((00, 00), color="black") != Stone((00, 00), color="empty")
-        assert not Stone((00, 00), color="empty") != Stone((00, 00), color="white")
-        assert not Stone((00, 00), color="empty") != Stone((00, 00), color="black")
+        assert not Stone(00, 00, color="white") != Stone(00, 00, color="empty")
+        assert not Stone(00, 00, color="black") != Stone(00, 00, color="empty")
+        assert not Stone(00, 00, color="empty") != Stone(00, 00, color="white")
+        assert not Stone(00, 00, color="empty") != Stone(00, 00, color="black")
 
 
 class TestIntersection:

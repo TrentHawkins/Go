@@ -34,7 +34,7 @@ class Color(IntFlag):
 
 
 @dataclass(eq=False)
-class Stone:
+class Stone(Intersection):
     """A stone.
 
     Go is played with playing tokens known as stones.
@@ -45,17 +45,15 @@ class Stone:
         point: Intersection the stone is on (irrelevant on which board.
     """
 
-    point: Intersection | tuple[int, int]
     color: Color | str = Color.empty
 
     def __post_init__(self):
         """Translate descriptive input."""
-        self.point = Intersection(*self.point) if isinstance(self.point, tuple) else self.point
         self.color = Color[self.color] if isinstance(self.color, str) else self.color
 
     def __hash__(self):
         """Hash only based on intersection."""
-        return hash(self.point)
+        return super(Stone, self).__hash__()
 
     def __eq__(self, other):
         """Compare based on allegiance only."""

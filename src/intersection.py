@@ -8,7 +8,7 @@ adjacent if they are distinct and connected by a horizontal or vertical line wit
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dataclass
 class Intersection:
     """An intersection (point).
 
@@ -30,6 +30,10 @@ class Intersection:
     def __post_init__(self):
         """Size must be positive."""
         object.__setattr__(self, 'size', abs(self.size))
+
+    def __hash__(self):
+        """Hash based on rank and file only."""
+        return hash((self.file, self.rank))
 
     def __bool__(self) -> bool:
         """Intersection must be within board boundaries."""
