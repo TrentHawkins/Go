@@ -33,7 +33,7 @@ class Color(IntFlag):
         return abs(self - other) == 2
 
 
-@dataclass(eq=False)
+@dataclass(repr=False, eq=False)
 class Stone(Intersection):
     """A stone.
 
@@ -51,14 +51,18 @@ class Stone(Intersection):
         """Translate descriptive input."""
         self.color = Color[self.color] if isinstance(self.color, str) else self.color
 
+    def __repr__(self):
+        """Assume color appearance."""
+        return repr(self.color)
+
     def __hash__(self):
         """Hash only based on intersection."""
         return super(Stone, self).__hash__()
 
     def __eq__(self, other):
         """Compare based on allegiance only."""
-        return self.color.__eq__(other.color)
+        return self.color == other.color
 
     def __ne__(self, other):
         """Compare based on allegiance only."""
-        return self.color.__ne__(other.color)
+        return self.color != other.color
