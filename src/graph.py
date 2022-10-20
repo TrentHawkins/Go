@@ -26,9 +26,9 @@ Undirected graph requires overriding some methods to account for symmetric edges
 """
 
 
-from typing import Any
+from typing import Hashable
 
-Node = Any  # Node type to be hashable to be used as keys.
+Node = Hashable  # Node type to be hashable to be used as keys.
 Nodes = frozenset[Node]  # A cluster of nodes.
 Clusters = set[Nodes]  # A collection of clusters.
 Neighborhood = set[Node]  # The neighborhood of a node. Forms edges given the node.
