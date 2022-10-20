@@ -39,8 +39,8 @@ class Board(Undirected):
 				)
 				neighborhood = Neighborhood()
 
-				for adjacency in stone.adjacencies:
-					neighbor = stone + adjacency
+				for adjacent_stone in stone.adjacencies:
+					neighbor = stone + adjacent_stone
 
 					if neighbor:
 						neighborhood.add(neighbor)
