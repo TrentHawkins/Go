@@ -12,10 +12,10 @@ play begins, to compensate for the difference in strength.
 
 
 class Player:
-    """A player.
+	"""A player.
 
-    Contains the clusters of the board graph belonging to the player.
-    Via mutability tricks, the clusters still have access to neighborhoods on the whole board to use as liberties.
-    """
+	Contains the clusters of the board graph belonging to the player.
+	Via mutability tricks, the clusters still have access to neighborhoods on the whole board to use as liberties.
+	"""
 
-    ...
+	...

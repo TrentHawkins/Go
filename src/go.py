@@ -49,53 +49,53 @@ from dataclasses import dataclass
 
 @dataclass
 class Go:
-    """A game of Go.
+	"""A game of Go.
 
-    Players: Go is a game between two players, called Black and White.
+	Players: Go is a game between two players, called Black and White.
 
-    Board: Go is played on a plain grid of 19 horizontal and 19 vertical lines, called a board.
-    -   Intersection: A point on the board where a horizontal line meets a vertical line is called an intersection.
-    -   Adjacent: Two intersections are said to be adjacent if they are connected by a horizontal or vertical line with no other
-        intersections between them.
+	Board: Go is played on a plain grid of 19 horizontal and 19 vertical lines, called a board.
+	-	Intersection: A point on the board where a horizontal line meets a vertical line is called an intersection.
+	-	Adjacent: Two intersections are said to be adjacent if they are connected by a horizontal or vertical line with no other
+		intersections between them.
 
-    Stones: Go is played with playing tokens known as stones. Each player has at their disposal an adequate supply (usually 180) of
-    stones of the same color.
+	Stones: Go is played with playing tokens known as stones. Each player has at their disposal an adequate supply (usually 180) of
+	stones of the same color.
 
-    Positions: At any time in the game, each intersection on the board is in one and only one of the following three states:
-    -   empty;
-    -   occupied by a black stone; or
-    -   occupied by a white stone.
-    A position consists of an indication of the state of each intersection.
-    -   Connected: Two placed stones of the same color (or two empty intersections) are said to be connected if it is possible to
-        draw a path from one intersection to the other by passing through adjacent intersections of the same state (empty, occupied
-        by white, or occupied by black).
-    -   Liberty: In a given position, a liberty of a stone is an empty intersection adjacent to that stone or adjacent to a stone
-        which is connected to that stone.
+	Positions: At any time in the game, each intersection on the board is in one and only one of the following three states:
+	-	empty;
+	-	occupied by a black stone; or
+	-	occupied by a white stone.
+	A position consists of an indication of the state of each intersection.
+	-	Connected: Two placed stones of the same color (or two empty intersections) are said to be connected if it is possible to
+		draw a path from one intersection to the other by passing through adjacent intersections of the same state (empty, occupied
+		by white, or occupied by black).
+	-	Liberty: In a given position, a liberty of a stone is an empty intersection adjacent to that stone or adjacent to a stone
+		which is connected to that stone.
 
-    Initial position: At the beginning of the game, the board is empty.
+	Initial position: At the beginning of the game, the board is empty.
 
-    Turns: Black moves first. The players alternate thereafter.
+	Turns: Black moves first. The players alternate thereafter.
 
-    Moving: When it is their turn, a player may either pass (by announcing "pass" and performing no action) or play. A play
-    consists of the following steps (performed in the prescribed order):
-    -   Playing a stone: Placing a stone of their color on an empty intersection (chosen subject to Rule 8 and, if it is in effect,
-        to Optional Rule 7A). It can never be moved to another intersection after being played.
-    -   Capture: Removing from the board any stones of their opponent's color that have no liberties.
-    -   Self-capture: Removing from the board any stones of their own color that have no liberties.
+	Moving: When it is their turn, a player may either pass (by announcing "pass" and performing no action) or play. A play
+	consists of the following steps (performed in the prescribed order):
+	-	Playing a stone: Placing a stone of their color on an empty intersection (chosen subject to Rule 8 and, if it is in effect,
+		to Optional Rule 7A). It can never be moved to another intersection after being played.
+	-	Capture: Removing from the board any stones of their opponent's color that have no liberties.
+	-	Self-capture: Removing from the board any stones of their own color that have no liberties.
 
-    Prohibition of repetition: A play is illegal if it would have the effect (after all steps of the play have been completed) of
-    creating a position that has occurred previously in the game.
+	Prohibition of repetition: A play is illegal if it would have the effect (after all steps of the play have been completed) of
+	creating a position that has occurred previously in the game.
 
-    End: The game ends when both players have passed consecutively. The final position is the position on the board at the time the
-    players pass consecutively.
-    -   Territory: In the final position, an empty intersection is said to belong to a player's territory if all stones adjacent to
-        it or to an empty intersection connected to it are of that player's color.
-    -   Area: In the final position, an intersection is said to belong to a player's area if either:
-        -   it belongs to that player's territory; or
-        -   it is occupied by a stone of that player's color.
-        Score: A player's score is the number of intersections in their area in the final position.
+	End: The game ends when both players have passed consecutively. The final position is the position on the board at the time the
+	players pass consecutively.
+	-	Territory: In the final position, an empty intersection is said to belong to a player's territory if all stones adjacent to
+		it or to an empty intersection connected to it are of that player's color.
+	-	Area: In the final position, an intersection is said to belong to a player's area if either:
+		-	it belongs to that player's territory; or
+		-	it is occupied by a stone of that player's color.
+		Score: A player's score is the number of intersections in their area in the final position.
 
-    Winner: If one player has a higher score than the other, then that player wins. Otherwise, the game is a draw.
-    """
+	Winner: If one player has a higher score than the other, then that player wins. Otherwise, the game is a draw.
+	"""
 
-    ...
+	...
