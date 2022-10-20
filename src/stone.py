@@ -7,7 +7,6 @@ to be insufficient, extra stones will be used.
 
 from dataclasses import dataclass
 from enum import IntFlag, unique
-from typing import Hashable
 
 from .intersection import Intersection
 

@@ -4,8 +4,6 @@ A point on the board where a horizontal line meets a vertical line is called an 
 adjacent if they are distinct and connected by a horizontal or vertical line with no other intersections between them.
 """
 
-from dataclasses import dataclass, field
-from typing import ClassVar
 
 from .graph import Undirected
 from .intersection import Intersection
