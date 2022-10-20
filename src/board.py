@@ -5,12 +5,8 @@ adjacent if they are distinct and connected by a horizontal or vertical line wit
 """
 
 
-from types import MethodType
-from typing import Generator
-
-from .graph import Undirected
-from .point import Point
-from .stone import Color, Stone
+from .graph import Neighborhood, Undirected
+from .stone import Stone
 
 
 class Board(Undirected):
@@ -41,7 +37,7 @@ class Board(Undirected):
 					file,
 					rank, size=self.size
 				)
-				neighborhood = set()
+				neighborhood = Neighborhood()
 
 				for adjacency in stone.adjacencies:
 					neighbor = stone + adjacency
