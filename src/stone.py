@@ -7,8 +7,9 @@ to be insufficient, extra stones will be used.
 
 from dataclasses import dataclass
 from enum import IntFlag, unique
+from typing import ClassVar
 
-from .intersection import Intersection
+from .point import Point
 
 
 @unique
@@ -16,14 +17,14 @@ class Color(IntFlag):
 	"""Color of an intersection."""
 
 	black = +1
-	empty = 00
+	empty = +0
 	white = -1
 
 	def __repr__(self) -> str:
 		"""Each color is actually a puc."""
 		return {
 			+1: "\U000026AB",
-			00: "\U0001F7E4",
+			+0: "\U0001F7E4",
 			-1: "\U000026AA",
 		}[self]
 
@@ -33,7 +34,7 @@ class Color(IntFlag):
 
 
 @dataclass(repr=False, eq=False)
-class Stone(Intersection):
+class Stone:
 	"""A stone.
 
 	Go is played with playing tokens known as stones.
@@ -44,10 +45,19 @@ class Stone(Intersection):
 		point: Intersection the stone is on (irrelevant on which board.
 	"""
 
+	adjacencies: ClassVar[set[Point]] = {
+		Point(+1, +0),  # east
+		Point(+0, +1),  # north
+		Point(-1, +0),  # west
+		Point(+0, -1),  # south
+	}
+
+	point: Point | tuple[int, int]
 	color: Color | str = Color.empty
 
 	def __post_init__(self):
-		"""Translate descriptive input."""
+		"""Translate semantic input to actual attributes."""
+		self.point = Point(*self.point) if isinstance(self.point, tuple) else self.point
 		self.color = Color[self.color] if isinstance(self.color, str) else self.color
 
 	def __repr__(self):
@@ -56,7 +66,7 @@ class Stone(Intersection):
 
 	def __hash__(self):
 		"""Hash only based on intersection."""
-		return super(Stone, self).__hash__()
+		return hash(self.point)
 
 	def __eq__(self, other):
 		"""Compare based on allegiance only."""
@@ -65,3 +75,20 @@ class Stone(Intersection):
 	def __ne__(self, other):
 		"""Compare based on allegiance only."""
 		return self.color != other.color
+
+	def liberty(self, point: Point) -> bool:
+		"""Is point a liberty of stone."""
+		return bool(point)
+
+	@property
+	def liberties(self):
+		"""Adjacent points."""
+		liberties = set[Point]()
+
+		for adjacent in self.adjacencies:
+			point = self.point + adjacent  # type: ignore
+
+			if self.liberty(point):
+				liberties.add(point)
+
+		return liberties

@@ -81,7 +81,7 @@ class Directed(Graph):
 
 	def __init__(self, *args, **kwargs):
 		"""Update graph by removing self-edges."""
-		super(Directed, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 	#	Remove self-edges.
 		for node in self:
@@ -188,11 +188,11 @@ class Directed(Graph):
 
 	def setdefault(self, node: Node, default_neighborhood: Neighborhood | None = None) -> Neighborhood:
 		"""Redefine dictionary `dict.setdefault` with empty neighborhood as default."""
-		return super(Directed, self).setdefault(node, default_neighborhood or Neighborhood())
+		return super().setdefault(node, default_neighborhood or Neighborhood())
 
 	def get(self, node: Node, default_neighborhood: Neighborhood | None = None) -> Neighborhood:
 		"""Redefine `get` with empty empty neighborhood as default."""
-		return super(Directed, self).get(node, default_neighborhood or Neighborhood())
+		return super().get(node, default_neighborhood or Neighborhood())
 
 	def add(self, node: Node, neighbohood: Neighborhood):
 		"""Add or update node with neighborhood."""
@@ -304,7 +304,7 @@ class Undirected(Directed):
 
 	def __init__(self, *args, **kwargs):
 		"""Update graph with missing symmetric edges and by removing self-edges."""
-		super(Undirected, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 	#	Add missing symmetric edges.
 		self.update(self.copy())
@@ -328,7 +328,7 @@ class Undirected(Directed):
 
 	def pop(self, node: Node, default_neighborhood: Neighborhood | None = None) -> Neighborhood:  # type: ignore
 		"""Delete node with neighborhood and symmetric edges and return neighborhood."""
-		neighborhood = super(Undirected, self).pop(node, default_neighborhood or Neighborhood())
+		neighborhood = super().pop(node, default_neighborhood or Neighborhood())
 
 	#	Remove symmetric edges.
 		for adjacent_node in neighborhood:
@@ -338,6 +338,6 @@ class Undirected(Directed):
 
 	def popitem(self) -> tuple[Node, Neighborhood]:
 		"""Delete last added node and neighborhood and return them."""
-		node, neighborhood = super(Undirected, self).popitem()
+		node, neighborhood = super().popitem()
 
 		return node, self.pop(node, neighborhood)  # Remove traces of popped node from adjacent nodes.
