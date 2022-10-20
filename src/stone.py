@@ -8,7 +8,7 @@ to be insufficient, extra stones will be used.
 from dataclasses import dataclass
 from enum import IntFlag, unique
 
-from .intersection import Intersection
+from .point import Point
 
 
 @unique
@@ -33,7 +33,7 @@ class Color(IntFlag):
 
 
 @dataclass(repr=False, eq=False)
-class Stone(Intersection):
+class Stone:
 	"""A stone.
 
 	Go is played with playing tokens known as stones.
@@ -44,11 +44,8 @@ class Stone(Intersection):
 		point: Intersection the stone is on (irrelevant on which board.
 	"""
 
-	color: Color | str = Color.empty
-
-	def __post_init__(self):
-		"""Translate descriptive input."""
-		self.color = Color[self.color] if isinstance(self.color, str) else self.color
+	point: Point
+	color: Color = Color.empty
 
 	def __repr__(self):
 		"""Assume color appearance."""
@@ -56,7 +53,7 @@ class Stone(Intersection):
 
 	def __hash__(self):
 		"""Hash only based on intersection."""
-		return super(Stone, self).__hash__()
+		return hash(self.point)
 
 	def __eq__(self, other):
 		"""Compare based on allegiance only."""

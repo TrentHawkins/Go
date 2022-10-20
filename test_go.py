@@ -6,7 +6,7 @@ class TestBoard:
 
 	def test_init(self):
 		"""Test board creation."""
-		from src.goban import Board
+		from src.board import Board
 
 	#	A simple board.
 		goban19x19 = Board()
@@ -24,37 +24,38 @@ class TestStone:
 
 	def test_color(self):
 		"""Test allegiance."""
-		from src.stone import Stone
+		from src.point import Point
+		from src.stone import Color, Stone
 
 	#	Assert intersections are properly hashed.
 		assert len(
 			{
-				Stone(-1, +1, color="white"),
-				Stone(+1, -1, color="black"),
-				Stone(00, 00),
+				Stone(Point(-1, +1), color=Color.white),
+				Stone(Point(+1, -1), color=Color.black),
+				Stone(Point(00, 00)),
 			}
 		) == 3
 
 	#	Same color means friends even on a different intersection.
-		assert Stone(-1, +1, color="white") == Stone(+1, -1, color="white")
-		assert Stone(-1, +1, color="black") == Stone(+1, -1, color="black")
-		assert Stone(-1, +1, color="empty") == Stone(+1, -1, color="empty")
+		assert Stone(Point(-1, +1), color=Color.white) == Stone(Point(+1, -1), color=Color.white)
+		assert Stone(Point(-1, +1), color=Color.black) == Stone(Point(+1, -1), color=Color.black)
+		assert Stone(Point(-1, +1), color=Color.empty) == Stone(Point(+1, -1), color=Color.empty)
 
 	#	Different color means foes even on the same intersection.
-		assert Stone(00, 00, color="white") != Stone(00, 00, color="black")
-		assert Stone(00, 00, color="black") != Stone(00, 00, color="white")
+		assert Stone(Point(00, 00), color=Color.white) != Stone(Point(00, 00), color=Color.black)
+		assert Stone(Point(00, 00), color=Color.black) != Stone(Point(00, 00), color=Color.white)
 
 	#	Empty is not friend:
-		assert not Stone(00, 00, color="white") == Stone(00, 00, color="empty")
-		assert not Stone(00, 00, color="black") == Stone(00, 00, color="empty")
-		assert not Stone(00, 00, color="empty") == Stone(00, 00, color="white")
-		assert not Stone(00, 00, color="empty") == Stone(00, 00, color="black")
+		assert not Stone(Point(00, 00), color=Color.white) == Stone(Point(00, 00), color=Color.empty)
+		assert not Stone(Point(00, 00), color=Color.black) == Stone(Point(00, 00), color=Color.empty)
+		assert not Stone(Point(00, 00), color=Color.empty) == Stone(Point(00, 00), color=Color.white)
+		assert not Stone(Point(00, 00), color=Color.empty) == Stone(Point(00, 00), color=Color.black)
 
 	#	Empty is not foe:
-		assert not Stone(00, 00, color="white") != Stone(00, 00, color="empty")
-		assert not Stone(00, 00, color="black") != Stone(00, 00, color="empty")
-		assert not Stone(00, 00, color="empty") != Stone(00, 00, color="white")
-		assert not Stone(00, 00, color="empty") != Stone(00, 00, color="black")
+		assert not Stone(Point(00, 00), color=Color.white) != Stone(Point(00, 00), color=Color.empty)
+		assert not Stone(Point(00, 00), color=Color.black) != Stone(Point(00, 00), color=Color.empty)
+		assert not Stone(Point(00, 00), color=Color.empty) != Stone(Point(00, 00), color=Color.white)
+		assert not Stone(Point(00, 00), color=Color.empty) != Stone(Point(00, 00), color=Color.black)
 
 
 class TestIntersection:
@@ -62,33 +63,33 @@ class TestIntersection:
 
 	def test_init(self):
 		"""Test proper generation of intersections."""
-		from src.intersection import Intersection
+		from src.point import Point
 
 	#	Assert size does stay positive.
-		assert Intersection(0, 0, -9).size == 9
+		assert Point(0, 0, -9).size == 9
 
 	#	Boundary checks inside board limits.
-		assert Intersection(-1, +1, 1)
+		assert Point(-1, +1, 1)
 
 	#	Boundary checks outside board limits.
-		assert not Intersection(-2, +1, 1)
-		assert not Intersection(-1, +2, 1)
+		assert not Point(-2, +1, 1)
+		assert not Point(-1, +2, 1)
 
 	def test_operations(self):
 		"""Test intersection vector operations."""
-		from src.intersection import Intersection
+		from src.point import Point
 
 	#	Binary operations:
-		assert Intersection(-1, +2, 0) + Intersection(-3, +4, 0) == Intersection(-4, +6, 0)
-		assert Intersection(-1, +2, 0) - Intersection(-3, +4, 0) == Intersection(+2, -2, 0)
+		assert Point(-1, +2, 0) + Point(-3, +4, 0) == Point(-4, +6, 0)
+		assert Point(-1, +2, 0) - Point(-3, +4, 0) == Point(+2, -2, 0)
 
 	#	Multiplication:
-		assert Intersection(-1, +2, 0) * 2 == Intersection(-2, +4, 0)
-		assert 2 * Intersection(-3, +4, 0) == Intersection(-6, +8, 0)
+		assert Point(-1, +2, 0) * 2 == Point(-2, +4, 0)
+		assert 2 * Point(-3, +4, 0) == Point(-6, +8, 0)
 
 	#	Unary operations:
-		assert +Intersection(-1, +2, 0) == Intersection(-1, +2, 0)
-		assert -Intersection(-3, +4, 0) == Intersection(+3, -4, 0)
+		assert +Point(-1, +2, 0) == Point(-1, +2, 0)
+		assert -Point(-3, +4, 0) == Point(+3, -4, 0)
 
 
 class TestUndirected:

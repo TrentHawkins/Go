@@ -5,12 +5,14 @@ adjacent if they are distinct and connected by a horizontal or vertical line wit
 """
 
 
+from types import MethodType
+
 from .graph import Undirected
-from .intersection import Intersection, Point
+from .point import Point
 from .stone import Color, Stone
 
 
-class Board(Undirected):
+class Board(list[list[Stone]]):
 	"""Go board.
 
 	The condition that the intersections be "distinct" is included to ensure that an intersection is not considered to be adjacent
@@ -24,11 +26,11 @@ class Board(Undirected):
 	13×13.
 	"""
 
-	adjacent: set[Intersection] = {
-		Intersection(+1, 00),  # east
-		Intersection(00, +1),  # north
-		Intersection(-1, 00),  # west
-		Intersection(00, -1),  # south
+	adjacent: set[Point] = {
+		Point(+1, 00),  # east
+		Point(00, +1),  # north
+		Point(-1, 00),  # west
+		Point(00, -1),  # south
 	}
 
 	def __init__(self, size: int = 9):
@@ -36,31 +38,38 @@ class Board(Undirected):
 		self.size = size
 		self.range = range(-self.size, self.size + 1)
 
-		self.stones = [
-			[
-				Stone(
-					file,
-					rank,
-				) for rank in self.range
-			] for file in self.range
-		]
-
-	#	Build neighborhoods.
 		super(Board, self).__init__(
-			{
-				node: {
-					node + neighbor for neighbor in self.adjacent if node + neighbor
-				} for rank in self.stones for node in rank
-			}
+			[
+				[
+					Stone(
+						Point(
+							file,
+							rank, size=self.size
+						)
+					) for file in self.range
+				] for rank in self.range
+			]
 		)
 
-	def __setitem__(self, intersection: Point, color: str):
-		"""Set stone of color on intersection."""
-		rank, file = intersection
-		stone = Stone(*intersection, color=color)
+	def __getitem__(self, point: tuple[int, int]):
+		"""Set stone of color on point."""
+		file, rank = point
 
-		self.stones[rank][file] = stone
-		self.add(stone, self.pop(stone))
+		return super(Board, self).__getitem__(rank).__getitem__(file)
+
+	def __setitem__(self, point: tuple[int, int], color_name: str):
+		"""Set stone of color on point."""
+		self[point].color = Color[color_name]
+
+	def __delitem__(self, point: tuple[int, int]):
+		"""Set stone of color on intersection."""
+		self[point].color = Color.empty
+
+	def __iter__(self):
+		"""Iterate through all points on the board."""
+		for rank in super(Board, self).__iter__():
+			for point in rank:
+				yield point
 
 	def __repr__(self):
 		"""Draw a board."""
@@ -68,7 +77,7 @@ class Board(Undirected):
 			f"\n    {''.join(f'{file:+2d}' for file in self.range)}    \n\n" + \
 			"\n".join(
 				f"{rank:+2d}  " + "".join(
-					repr(self.stones[rank][file]) for file in self.range
+					repr(self[file, rank]) for file in self.range
 				) + f"  {rank:+2d}" for rank in self.range
 			) + \
 			f"\n\n    {''.join(f'{file:+2d}' for file in self.range)}    \n"

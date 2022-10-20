@@ -7,11 +7,9 @@ adjacent if they are distinct and connected by a horizontal or vertical line wit
 
 from dataclasses import dataclass
 
-Point = tuple[int, int]
 
-
-@dataclass(unsafe_hash=True)
-class Intersection:
+@dataclass(frozen=True)
+class Point:
 	"""An intersection (point).
 
 	A point on the board where a horizontal line meets a vertical line is called an intersection. Two intersections are said to be
