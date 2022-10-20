@@ -94,7 +94,9 @@ class Directed(Graph):
     #   Remove self-edge.
         neighborhood.discard(node)
 
-        super(Directed, self).__setitem__(node, neighborhood)
+    #   Remove hanging edges if any.
+        self.pop(node, neighborhood)
+        self.add(node, neighborhood)
 
     """Neighborhood set operations on nodes:
         | : Unite graph with another.
@@ -136,8 +138,8 @@ class Directed(Graph):
         return self.symmetric_difference(other)
 
     """Neighborhood set comparisons and their strict counterparts on nodes:
-        <= :  If current a subgraph of the other.
-        >= :  If current a supergraph of the other.
+        <= : If current a subgraph of the other.
+        >= : If current a supergraph of the other.
     """
 
     def __le__(self, other):
