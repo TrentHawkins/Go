@@ -94,7 +94,7 @@ class Directed(Graph):
     #   Remove self-edge.
         neighborhood.discard(node)
 
-    #   Remove hanging edges if any.
+    #   Remove hanging edges if any and add new missing symmetric ones if necessary (undirected graphs).
         self.pop(node, neighborhood)
         self.add(node, neighborhood)
 
@@ -308,17 +308,6 @@ class Undirected(Directed):
 
     #   Add missing symmetric edges.
         self.update(self.copy())
-
-    def __setitem__(self, node: Node, neighborhood: Neighborhood | None = None):
-        """Add node with a neighborhood of nodes by adding the missing symmetric edges and removing possible self-edge."""
-        neighborhood = neighborhood or Neighborhood()
-
-    #   Remove self-edge.
-        neighborhood.discard(node)
-
-    #   Remove hanging edges if any and add new missing symmetric ones.
-        self.pop(node, neighborhood)
-        self.add(node, neighborhood)
 
     def __delitem__(self, node: Node):
         """Delete node with its neighborhood of nodes and all symmetric edges. Node has exist."""
