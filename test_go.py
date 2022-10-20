@@ -8,39 +8,9 @@ class TestBoard:
 		"""Test board creation."""
 		from src.board import Board
 
-	#	A simple board.
-		goban19x19 = Board()
-
-	#	Some smaller boards.
-		goban17x17 = Board(size=8)
-		goban13x13 = Board(size=6)
-
-	#	A singular board:
-		gobanPoint = Board(size=0)
-
-	def test_liberty(self):
-		"""Test liberty conditioning."""
-		from src.board import Board
-
-	#	A new board.
-		goban = Board()
-
-	#	See the liberties of white going one by one.
-		goban[+0, +0] = "white"; assert len(goban[+0, +0].liberties) == 4
-		goban[+1, +0] = "black"; assert len(goban[+0, +0].liberties) == 3
-		goban[+0, +1] = "black"; assert len(goban[+0, +0].liberties) == 2
-		goban[-1, +0] = "black"; assert len(goban[+0, +0].liberties) == 1
-		goban[+0, -1] = "black"; assert len(goban[+0, +0].liberties) == 0
-
-	#	Side stones only have 3 liberites. Corner ones only have 2.
-		goban[+9, +0] = "white"; assert len(goban[+9, +0].liberties) == 3
-		goban[+9, +9] = "white"; assert len(goban[+9, +9].liberties) == 2
-		goban[+0, +9] = "white"; assert len(goban[+0, +9].liberties) == 3
-		goban[-9, +9] = "white"; assert len(goban[-9, +9].liberties) == 2
-		goban[-9, +0] = "white"; assert len(goban[-9, +0].liberties) == 3
-		goban[-9, -9] = "white"; assert len(goban[-9, -9].liberties) == 2
-		goban[+0, -9] = "white"; assert len(goban[+0, -9].liberties) == 3
-		goban[+9, -9] = "white"; assert len(goban[+9, -9].liberties) == 2
+	#	Assert generated sizes match board spec.
+		for size in range(10):
+			assert len(Board(size=size)) == (2 * size + 1) ** 2
 
 
 class TestStone:
@@ -48,38 +18,28 @@ class TestStone:
 
 	def test_color(self):
 		"""Test allegiance."""
-		from src.point import Point
-		from src.stone import Color, Stone
-
-	#	Assert intersections are properly hashed.
-		assert len(
-			{
-				Stone(Point(-1, +1), color=Color.white),
-				Stone(Point(+1, -1), color=Color.black),
-				Stone(Point(+0, +0)),
-			}
-		) == 3
+		from src.stone import Stone
 
 	#	Same color means friends even on a different intersection.
-		assert Stone(Point(-1, +1), color=Color.white) == Stone(Point(+1, -1), color=Color.white)
-		assert Stone(Point(-1, +1), color=Color.black) == Stone(Point(+1, -1), color=Color.black)
-		assert Stone(Point(-1, +1), color=Color.empty) == Stone(Point(+1, -1), color=Color.empty)
+		assert Stone(-1, +1, color="white") == Stone(+1, -1, color="white")
+		assert Stone(-1, +1, color="black") == Stone(+1, -1, color="black")
+		assert Stone(-1, +1, color="empty") == Stone(+1, -1, color="empty")
 
 	#	Different color means foes even on the same intersection.
-		assert Stone(Point(+0, +0), color=Color.white) != Stone(Point(+0, +0), color=Color.black)
-		assert Stone(Point(+0, +0), color=Color.black) != Stone(Point(+0, +0), color=Color.white)
+		assert Stone(+0, +0, color="white") != Stone(+0, +0, color="black")
+		assert Stone(+0, +0, color="black") != Stone(+0, +0, color="white")
 
 	#	Empty is not friend:
-		assert not Stone(Point(+0, +0), color=Color.white) == Stone(Point(+0, +0), color=Color.empty)
-		assert not Stone(Point(+0, +0), color=Color.black) == Stone(Point(+0, +0), color=Color.empty)
-		assert not Stone(Point(+0, +0), color=Color.empty) == Stone(Point(+0, +0), color=Color.white)
-		assert not Stone(Point(+0, +0), color=Color.empty) == Stone(Point(+0, +0), color=Color.black)
+		assert not Stone(+0, +0, color="white") == Stone(+0, +0, color="empty")
+		assert not Stone(+0, +0, color="black") == Stone(+0, +0, color="empty")
+		assert not Stone(+0, +0, color="empty") == Stone(+0, +0, color="white")
+		assert not Stone(+0, +0, color="empty") == Stone(+0, +0, color="black")
 
 	#	Empty is not foe:
-		assert not Stone(Point(+0, +0), color=Color.white) != Stone(Point(+0, +0), color=Color.empty)
-		assert not Stone(Point(+0, +0), color=Color.black) != Stone(Point(+0, +0), color=Color.empty)
-		assert not Stone(Point(+0, +0), color=Color.empty) != Stone(Point(+0, +0), color=Color.white)
-		assert not Stone(Point(+0, +0), color=Color.empty) != Stone(Point(+0, +0), color=Color.black)
+		assert not Stone(+0, +0, color="white") != Stone(+0, +0, color="empty")
+		assert not Stone(+0, +0, color="black") != Stone(+0, +0, color="empty")
+		assert not Stone(+0, +0, color="empty") != Stone(+0, +0, color="white")
+		assert not Stone(+0, +0, color="empty") != Stone(+0, +0, color="black")
 
 
 class TestIntersection:

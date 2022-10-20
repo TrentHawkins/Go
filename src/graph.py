@@ -95,7 +95,7 @@ class Directed(Graph):
 		neighborhood.discard(node)
 
 	#	Remove hanging edges if any and add new missing symmetric ones if necessary (undirected graphs).
-		self.pop(node, neighborhood)
+		self.pop(node)
 		self.add(node, neighborhood)
 
 	"""Neighborhood set operations on nodes:

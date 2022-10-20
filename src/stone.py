@@ -34,7 +34,7 @@ class Color(IntFlag):
 
 
 @dataclass
-class Stone:
+class Stone(Point):
 	"""A stone.
 
 	Go is played with playing tokens known as stones.
@@ -52,18 +52,27 @@ class Stone:
 		Point(+0, -1),  # south
 	}
 
-	def __init__(self, point: Point | tuple[int, int], color: Color | str = Color.empty):
-		"""Translate semantic input to actual attributes."""
-		self.point: Point = Point(*point) if isinstance(point, tuple) else point
-		self.color: Color = Color[color] if isinstance(color, str) else color
+	color: Color | str = Color.empty
+
+	def __post_init__(self):
+		"""Translate color name to color."""
+		self.color = Color[self.color] if isinstance(self.color, str) else self.color
 
 	def __repr__(self):
 		"""Assume color appearance."""
-		return repr(self.color)
+		representation = repr(self.color)
+
+		if self.file == +self.size:
+			representation = representation + f"  {self.rank:+2d}\n"
+
+		if self.file == -self.size:
+			representation = f"{self.rank:+2d}  " + representation
+
+		return representation
 
 	def __hash__(self):
 		"""Hash only based on intersection."""
-		return hash(self.point)
+		return super().__hash__()
 
 	def __eq__(self, other):
 		"""Compare based on allegiance only."""
@@ -72,37 +81,3 @@ class Stone:
 	def __ne__(self, other):
 		"""Compare based on allegiance only."""
 		return self.color != other.color
-
-	def liberty(self, point: Point) -> bool:
-		"""Is point a liberty of stone."""
-		return bool(point)
-
-	def ally(self, point: Point) -> bool:
-		"""Is point a liberty of stone."""
-		return bool(point)
-
-	@property
-	def liberties(self):
-		"""Adjacent free intersections."""
-		liberties = set[Point]()
-
-		for adjacent in self.adjacencies:
-			point = self.point + adjacent  # type: ignore
-
-			if self.liberty(point):
-				liberties.add(point)
-
-		return liberties
-
-	@property
-	def allies(self):
-		"""Adjacent intersections with an ally."""
-		allies = set[Point]()
-
-		for adjacent in self.adjacencies:
-			point = self.point + adjacent  # type: ignore
-
-			if self.ally(point):
-				allies.add(point)
-
-		return allies
