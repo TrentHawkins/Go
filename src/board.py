@@ -26,50 +26,33 @@ class Board(list[list[Stone]]):
 	13×13.
 	"""
 
-	adjacent: set[Point] = {
-		Point(+1, 00),  # east
-		Point(00, +1),  # north
-		Point(-1, 00),  # west
-		Point(00, -1),  # south
-	}
-
 	def __init__(self, size: int = 9):
 		"""Build board."""
 		self.size = size
 		self.range = range(-self.size, self.size + 1)
 
-		super(Board, self).__init__(
+	#	Initialize empty board.
+		super().__init__(
 			[
 				[
 					Stone(
 						Point(
 							file,
 							rank, size=self.size
-						)
-					) for file in self.range
-				] for rank in self.range
+						),
+						color=Color.empty,
+					) for file in range(-self.size, self.size + 1)
+				] for rank in range(-self.size, self.size + 1)
 			]
 		)
 
-	def __getitem__(self, point: tuple[int, int]):
-		"""Set stone of color on point."""
-		file, rank = point
+	#	Provide board context for stone liberty depiction.
+		def stone_liberty(stone: Stone, point: Point) -> bool:
+			f"""{stone.liberty.__doc__}"""
+			return stone.__class__.liberty(stone, point) and self[point].color == Color.empty
 
-		return super(Board, self).__getitem__(rank).__getitem__(file)
-
-	def __setitem__(self, point: tuple[int, int], color_name: str):
-		"""Set stone of color on point."""
-		self[point].color = Color[color_name]
-
-	def __delitem__(self, point: tuple[int, int]):
-		"""Set stone of color on intersection."""
-		self[point].color = Color.empty
-
-	def __iter__(self):
-		"""Iterate through all points on the board."""
-		for rank in super(Board, self).__iter__():
-			for point in rank:
-				yield point
+		for stone in self:
+			stone.liberty = MethodType(stone_liberty, stone)
 
 	def __repr__(self):
 		"""Draw a board."""
@@ -81,3 +64,27 @@ class Board(list[list[Stone]]):
 				) + f"  {rank:+2d}" for rank in self.range
 			) + \
 			f"\n\n    {''.join(f'{file:+2d}' for file in self.range)}    \n"
+
+	def __len__(self):
+		"""Area of the board."""
+		return super().__len__() ** 2
+
+	def __getitem__(self, point: Point | tuple[int, int]):
+		"""Set stone of color on point."""
+		point = Point(*point, size=self.size) if isinstance(point, tuple) else point
+		return super().__getitem__(point.rank + self.size).__getitem__(point.file + self.size)
+
+	def __setitem__(self, point: Point | tuple[int, int], color: Color | str):
+		"""Set stone of color on point."""
+		color = Color[color] if isinstance(color, str) else color
+		self[point].color = color
+
+	def __delitem__(self, point: tuple[int, int]):
+		"""Set stone of color on intersection."""
+		self[point].color = "empty"
+
+	def __iter__(self):
+		"""Iterate through all points on the board."""
+		for rank in super().__iter__():
+			for point in rank:
+				yield point

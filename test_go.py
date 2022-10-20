@@ -18,6 +18,30 @@ class TestBoard:
 	#	A singular board:
 		gobanPoint = Board(size=0)
 
+	def test_liberty(self):
+		"""Test liberty conditioning."""
+		from src.board import Board
+
+	#	A new board.
+		goban = Board()
+
+	#	See the liberties of white going one by one.
+		goban[+0, +0] = "white"; assert len(goban[+0, +0].liberties) == 4
+		goban[+1, +0] = "black"; assert len(goban[+0, +0].liberties) == 3
+		goban[+0, +1] = "black"; assert len(goban[+0, +0].liberties) == 2
+		goban[-1, +0] = "black"; assert len(goban[+0, +0].liberties) == 1
+		goban[+0, -1] = "black"; assert len(goban[+0, +0].liberties) == 0
+
+	#	Side stones only have 3 liberites. Corner ones only have 2.
+		goban[+9, +0] = "white"; assert len(goban[+9, +0].liberties) == 3
+		goban[+9, +9] = "white"; assert len(goban[+9, +9].liberties) == 2
+		goban[+0, +9] = "white"; assert len(goban[+0, +9].liberties) == 3
+		goban[-9, +9] = "white"; assert len(goban[-9, +9].liberties) == 2
+		goban[-9, +0] = "white"; assert len(goban[-9, +0].liberties) == 3
+		goban[-9, -9] = "white"; assert len(goban[-9, -9].liberties) == 2
+		goban[+0, -9] = "white"; assert len(goban[+0, -9].liberties) == 3
+		goban[+9, -9] = "white"; assert len(goban[+9, -9].liberties) == 2
+
 
 class TestStone:
 	"""Test stone placement."""
@@ -32,7 +56,7 @@ class TestStone:
 			{
 				Stone(Point(-1, +1), color=Color.white),
 				Stone(Point(+1, -1), color=Color.black),
-				Stone(Point(00, 00)),
+				Stone(Point(+0, +0)),
 			}
 		) == 3
 
@@ -42,20 +66,20 @@ class TestStone:
 		assert Stone(Point(-1, +1), color=Color.empty) == Stone(Point(+1, -1), color=Color.empty)
 
 	#	Different color means foes even on the same intersection.
-		assert Stone(Point(00, 00), color=Color.white) != Stone(Point(00, 00), color=Color.black)
-		assert Stone(Point(00, 00), color=Color.black) != Stone(Point(00, 00), color=Color.white)
+		assert Stone(Point(+0, +0), color=Color.white) != Stone(Point(+0, +0), color=Color.black)
+		assert Stone(Point(+0, +0), color=Color.black) != Stone(Point(+0, +0), color=Color.white)
 
 	#	Empty is not friend:
-		assert not Stone(Point(00, 00), color=Color.white) == Stone(Point(00, 00), color=Color.empty)
-		assert not Stone(Point(00, 00), color=Color.black) == Stone(Point(00, 00), color=Color.empty)
-		assert not Stone(Point(00, 00), color=Color.empty) == Stone(Point(00, 00), color=Color.white)
-		assert not Stone(Point(00, 00), color=Color.empty) == Stone(Point(00, 00), color=Color.black)
+		assert not Stone(Point(+0, +0), color=Color.white) == Stone(Point(+0, +0), color=Color.empty)
+		assert not Stone(Point(+0, +0), color=Color.black) == Stone(Point(+0, +0), color=Color.empty)
+		assert not Stone(Point(+0, +0), color=Color.empty) == Stone(Point(+0, +0), color=Color.white)
+		assert not Stone(Point(+0, +0), color=Color.empty) == Stone(Point(+0, +0), color=Color.black)
 
 	#	Empty is not foe:
-		assert not Stone(Point(00, 00), color=Color.white) != Stone(Point(00, 00), color=Color.empty)
-		assert not Stone(Point(00, 00), color=Color.black) != Stone(Point(00, 00), color=Color.empty)
-		assert not Stone(Point(00, 00), color=Color.empty) != Stone(Point(00, 00), color=Color.white)
-		assert not Stone(Point(00, 00), color=Color.empty) != Stone(Point(00, 00), color=Color.black)
+		assert not Stone(Point(+0, +0), color=Color.white) != Stone(Point(+0, +0), color=Color.empty)
+		assert not Stone(Point(+0, +0), color=Color.black) != Stone(Point(+0, +0), color=Color.empty)
+		assert not Stone(Point(+0, +0), color=Color.empty) != Stone(Point(+0, +0), color=Color.white)
+		assert not Stone(Point(+0, +0), color=Color.empty) != Stone(Point(+0, +0), color=Color.black)
 
 
 class TestIntersection:
@@ -113,6 +137,7 @@ class TestUndirected:
 
 	#	Graph will be empty after clearing, as no pair of nodes is connected.
 		graph.clear()
+
 		assert graph == Undirected()
 
 	#	Graph should be reproducible from its own edgelist.
@@ -161,6 +186,7 @@ class TestUndirected:
 	#	Test if other methods for altering the graph are affected by the symmetric setter.
 		graph.update({1: {5}})  # Try and update graph. This also tests adding.
 		should_be.update({1: should_be[1] | {5}, 5: {1}})  # The graph should contain both edge directions.
+
 		assert graph == should_be
 		assert graph.setdefault(1, {4}) == {
 			2,
@@ -231,6 +257,7 @@ class TestUndirected:
 
 	#	Plain-delete node 4 and connected edges.
 		del graph[4]
+
 		assert 4 not in graph
 		assert 4 not in graph[2]  # The symmetric edge should be missing too.
 
@@ -246,6 +273,7 @@ class TestUndirected:
 
 	#	Clear isolated nodes.
 		graph.clear()
+
 		assert graph == Undirected()
 
 	def test_special(self):
@@ -323,6 +351,7 @@ class TestUndirected:
 
 	#	Check edgelist is the same even after clearing isolated nodes.
 		graph.clear()
+
 		assert 0 not in graph
 		assert graph.edge_list == Edges(
 			{
