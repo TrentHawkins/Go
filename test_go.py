@@ -1,6 +1,24 @@
 """Tests for Go engine."""
 
 
+class TestBoard:
+    """Test board creation and handling."""
+
+    def test_init(self):
+        """Test board creation."""
+        from src.goban import Board
+
+    #   A simple board.
+        goban19x19 = Board()
+
+    #   Some smaller boards.
+        goban17x17 = Board(size=8)
+        goban13x13 = Board(size=6)
+
+    #   A singular board:
+        gobanPoint = Board(size=0)
+
+
 class TestStone:
     """Test stone placement."""
 

@@ -56,7 +56,7 @@ class Stone(Intersection):
 
     def __hash__(self):
         """Hash only based on intersection."""
-        return hash(super(Stone, self))
+        return super(Stone, self).__hash__()
 
     def __eq__(self, other):
         """Compare based on allegiance only."""
