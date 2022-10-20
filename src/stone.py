@@ -33,7 +33,7 @@ class Color(IntFlag):
 		return abs(self - other) == 2
 
 
-@dataclass(repr=False, eq=False)
+@dataclass
 class Stone:
 	"""A stone.
 
@@ -52,13 +52,10 @@ class Stone:
 		Point(+0, -1),  # south
 	}
 
-	point: Point | tuple[int, int]
-	color: Color | str = Color.empty
-
-	def __post_init__(self):
+	def __init__(self, point: Point | tuple[int, int], color: Color | str = Color.empty):
 		"""Translate semantic input to actual attributes."""
-		self.point = Point(*self.point) if isinstance(self.point, tuple) else self.point
-		self.color = Color[self.color] if isinstance(self.color, str) else self.color
+		self.point: Point = Point(*point) if isinstance(point, tuple) else point
+		self.color: Color = Color[color] if isinstance(color, str) else color
 
 	def __repr__(self):
 		"""Assume color appearance."""
@@ -80,9 +77,13 @@ class Stone:
 		"""Is point a liberty of stone."""
 		return bool(point)
 
+	def ally(self, point: Point) -> bool:
+		"""Is point a liberty of stone."""
+		return bool(point)
+
 	@property
 	def liberties(self):
-		"""Adjacent points."""
+		"""Adjacent free intersections."""
 		liberties = set[Point]()
 
 		for adjacent in self.adjacencies:
@@ -92,3 +93,16 @@ class Stone:
 				liberties.add(point)
 
 		return liberties
+
+	@property
+	def allies(self):
+		"""Adjacent intersections with an ally."""
+		allies = set[Point]()
+
+		for adjacent in self.adjacencies:
+			point = self.point + adjacent  # type: ignore
+
+			if self.ally(point):
+				allies.add(point)
+
+		return allies

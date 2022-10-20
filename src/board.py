@@ -29,8 +29,8 @@ class Board:
 
 	def __init__(self, size: int = 9):
 		"""Build board."""
-		self.size = size
-		self.range = range(-self.size, self.size + 1)
+		self.size: int = size
+		self.range: range = range(-self.size, self.size + 1)
 
 	#	Initialize empty board.
 		self.stones = [
@@ -41,8 +41,8 @@ class Board:
 						rank, size=self.size
 					),
 					color=Color.empty,
-				) for file in range(-self.size, self.size + 1)
-			] for rank in range(-self.size, self.size + 1)
+				) for file in self.range
+			] for rank in self.range
 		]
 
 	#	Provide board context for stone liberty depiction.
@@ -52,6 +52,14 @@ class Board:
 
 		for stone in self:
 			stone.liberty = MethodType(liberty, stone)
+
+	#	Provide board context for stone ally depiction.
+		def ally(stone: Stone, point: Point) -> bool:
+			f"""{stone.ally.__doc__}"""
+			return stone.__class__.ally(stone, point) and self[point].color == stone.color
+
+		for stone in self:
+			stone.ally = MethodType(ally, stone)
 
 	def __repr__(self) -> str:
 		"""Draw a board."""
@@ -80,10 +88,13 @@ class Board:
 
 	def __delitem__(self, point: tuple[int, int]):
 		"""Set stone of color on intersection."""
-		self[point].color = "empty"
+		self[point] = "empty"
 
 	def __iter__(self) -> Generator[Stone, None, None]:
 		"""Iterate through all points on the board."""
 		for rank in self.stones:
 			for stone in rank:
 				yield stone
+
+	def cluster(self, stone: Stone):
+		"""Get connected cluster stone belongs to."""
