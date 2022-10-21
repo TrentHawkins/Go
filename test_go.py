@@ -18,7 +18,7 @@ class TestBoard:
 		from src.stone import Stone
 
 	#	Use a simple board.
-		board = Board(1)
+		board = Board()
 
 	#	Make some changes.
 		board[Stone(+0, +0, size=board.size, color="white")] = board[Stone(+0, +0, size=board.size)]
