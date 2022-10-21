@@ -16,16 +16,16 @@ from .point import Point
 class Color(IntFlag):
 	"""Color of an intersection."""
 
-	black = +1
-	empty = +0
-	white = -1
+	black = 2
+	empty = 1
+	white = 4
 
 	def __repr__(self) -> str:
 		"""Each color is actually a puc."""
 		return {
-			+1: "\U000026AB",
-			+0: "\U0001F7E4",
-			-1: "\U000026AA",
+			self.black: "\U000026AB",
+			self.empty: "\U0001F7E4",
+			self.white: "\U000026AA",
 		}[self]
 
 	def __ne__(self, other) -> bool:
