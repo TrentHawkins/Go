@@ -40,6 +40,22 @@ class Point:
 			)
 		)  # HACK: Avoid CPython's `hash(-2) == hash(-1)`!
 
+	def __eq__(self, other):
+		"""Equate by rank and file only."""
+		return (
+			self.file == other.file and
+			self.rank == other.rank and
+			self.size == other.size
+		)
+
+	def __ne__(self, other):
+		"""Equate by rank and file only."""
+		return (
+			self.file != other.file or
+			self.rank != other.rank or
+			self.size != other.size
+		)
+
 	def __bool__(self) -> bool:
 		"""Intersection must be within board boundaries."""
 		return (

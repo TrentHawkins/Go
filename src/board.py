@@ -2,11 +2,16 @@
 
 A point on the board where a horizontal line meets a vertical line is called an intersection. Two intersections are said to be
 adjacent if they are distinct and connected by a horizontal or vertical line with no other intersections between them.
+
+The board file format starts with a board descriptor line, followed by a flag.
 """
 
 
+from operator import attrgetter
+from typing import Callable
+
 from .graph import Neighborhood, Undirected
-from .stone import Stone
+from .stone import Color, Stone
 
 
 class Board(Undirected):
@@ -23,7 +28,7 @@ class Board(Undirected):
 	13×13.
 	"""
 
-	def __init__(self, size: int = 9):
+	def __init__(self, size: int = 9, color: Callable[[], str] = lambda: "empty"):
 		"""Build board."""
 		self.size: int = size
 		self.range: range = range(-self.size, self.size + 1)
@@ -34,8 +39,9 @@ class Board(Undirected):
 		for rank in self.range:
 			for file in self.range:
 				stone = Stone(
+					rank,
 					file,
-					rank, size=self.size
+					size=self.size, color=color()
 				)
 				neighborhood = Neighborhood()
 
@@ -47,8 +53,18 @@ class Board(Undirected):
 
 				self[stone] = neighborhood
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		"""Draw a board."""
-		files = "\n    " + "".join(f"{file:+2d}" for file in self.range) + "\n"
+		return "\n" + "".join(str(stone) for stone in sorted(self, key=attrgetter("rank", "file"))) + "\n"
 
-		return files + "\n" + "".join(repr(stone) for stone in self) + files
+	@classmethod
+	def load(cls, filename: str):
+		"""Load board state from file."""
+		with open(filename, mode="rt", encoding="utf-8") as board:
+			return cls(size=int(board.read(2).strip()), color=lambda: Color(board.read(1).strip()).name or "empty")
+
+	def save(self, filename: str):
+		"""Save board state to file."""
+		with open(filename, mode="wt", encoding="utf-8") as board:
+			board.write(f"{self.size} ")
+			board.write(str(self).replace("\n", ""))

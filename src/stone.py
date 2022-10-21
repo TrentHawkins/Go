@@ -20,7 +20,7 @@ class Color(IntFlag):
 	empty = 1
 	white = 4
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		"""Each color is actually a puc."""
 		return {
 			self.black: "\U000026AB",
@@ -32,8 +32,12 @@ class Color(IntFlag):
 		"""Empty squares are foes with one another."""
 		return abs(self - other) == 2
 
+	@classmethod
+	def _missing_(cls, _):
+		return cls.empty
 
-@dataclass
+
+@dataclass(eq=False)
 class Stone(Point):
 	"""A stone.
 
@@ -58,26 +62,6 @@ class Stone(Point):
 		"""Translate color name to color."""
 		self.color = Color[self.color] if isinstance(self.color, str) else self.color
 
-	def __repr__(self):
+	def __str__(self):
 		"""Assume color appearance."""
-		representation = repr(self.color)
-
-		if self.file == +self.size:
-			representation = representation + f"  {self.rank:+2d}\n"
-
-		if self.file == -self.size:
-			representation = f"{self.rank:+2d}  " + representation
-
-		return representation
-
-	def __hash__(self):
-		"""Hash only based on intersection."""
-		return super().__hash__()
-
-	def __eq__(self, other):
-		"""Compare based on allegiance only."""
-		return self.color == other.color
-
-	def __ne__(self, other):
-		"""Compare based on allegiance only."""
-		return self.color != other.color
+		return str(self.color) + "\n" if self.file == self.size else str(self.color)

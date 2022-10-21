@@ -12,34 +12,26 @@ class TestBoard:
 		for size in range(10):
 			assert len(Board(size=size)) == (2 * size + 1) ** 2
 
-
-class TestStone:
-	"""Test stone placement."""
-
-	def test_color(self):
-		"""Test allegiance."""
+	def test_io(self):
+		"""Test saving the board state."""
+		from src.board import Board
 		from src.stone import Stone
 
-	#	Same color means friends even on a different intersection.
-		assert Stone(-1, +1, color="white") == Stone(+1, -1, color="white")
-		assert Stone(-1, +1, color="black") == Stone(+1, -1, color="black")
-		assert Stone(-1, +1, color="empty") == Stone(+1, -1, color="empty")
+	#	Use a simple board.
+		board = Board(1)
 
-	#	Different color means foes even on the same intersection.
-		assert Stone(+0, +0, color="white") != Stone(+0, +0, color="black")
-		assert Stone(+0, +0, color="black") != Stone(+0, +0, color="white")
+	#	Make some changes.
+		board[Stone(+0, +0, size=board.size, color="white")] = board[Stone(+0, +0, size=board.size)]
+		board[Stone(+1, +0, size=board.size, color="black")] = board[Stone(+1, +0, size=board.size)]
+		board[Stone(+0, +1, size=board.size, color="black")] = board[Stone(+0, +1, size=board.size)]
+		board[Stone(-1, +0, size=board.size, color="black")] = board[Stone(-1, +0, size=board.size)]
+		board[Stone(+0, -1, size=board.size, color="black")] = board[Stone(+0, -1, size=board.size)]
 
-	#	Empty is not friend:
-		assert not Stone(+0, +0, color="white") == Stone(+0, +0, color="empty")
-		assert not Stone(+0, +0, color="black") == Stone(+0, +0, color="empty")
-		assert not Stone(+0, +0, color="empty") == Stone(+0, +0, color="white")
-		assert not Stone(+0, +0, color="empty") == Stone(+0, +0, color="black")
+	#	Save board.
+		board.save("test.board")
 
-	#	Empty is not foe:
-		assert not Stone(+0, +0, color="white") != Stone(+0, +0, color="empty")
-		assert not Stone(+0, +0, color="black") != Stone(+0, +0, color="empty")
-		assert not Stone(+0, +0, color="empty") != Stone(+0, +0, color="white")
-		assert not Stone(+0, +0, color="empty") != Stone(+0, +0, color="black")
+	#	Reload save board and assert it is the same one as the one here.
+		assert board == Board.load("test.board")
 
 
 class TestIntersection:
