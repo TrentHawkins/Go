@@ -55,16 +55,20 @@ class Board(Undirected):
 
 	def __str__(self) -> str:
 		"""Draw a board."""
-		return "\n" + "".join(str(stone) for stone in sorted(self, key=attrgetter("rank", "file"))) + "\n"
+		return "".join(str(stone) for stone in sorted(self, key=attrgetter("rank", "file")))
 
 	@classmethod
 	def load(cls, filename: str):
 		"""Load board state from file."""
 		with open(filename, mode="rt", encoding="utf-8") as board:
-			return cls(size=int(board.read(2).strip()), color=lambda: Color(board.read(1).strip()).name or "empty")
+			def read_strip(size: int | None = None) -> str:
+				output = board.read(size)
+
+				return output if not output.isspace() else read_strip(size)
+
+			return cls(size=int(read_strip(1)), color=lambda: Color(read_strip(1)).name or "empty")
 
 	def save(self, filename: str):
 		"""Save board state to file."""
 		with open(filename, mode="wt", encoding="utf-8") as board:
-			board.write(f"{self.size} ")
-			board.write(str(self).replace("\n", ""))
+			board.write(f"{self.size}\n\n{self}")
