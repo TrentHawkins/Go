@@ -262,7 +262,7 @@ class TestUndirected:
 		assert graph[0] == Neighborhood()
 
 	#	Assert clusters are as indicated by the directed initialization of this undirected graph.
-		assert graph.clusters == Clusters(
+		assert graph.clusters() == Clusters(
 			{
 				Nodes(
 					{
@@ -296,6 +296,62 @@ class TestUndirected:
 	#	Assert nodes belong to their clusters.
 		for node in graph:
 			assert node in graph.cluster(node)
+
+	#	If condition evaluates to false, Nodes are isolated.
+		assert graph.clusters(lambda _: False) == Clusters(
+			{
+				Nodes(
+					{
+						1,
+					}
+				),
+				Nodes(
+					{
+						2,
+					}
+				),
+				Nodes(
+					{
+						3,
+					}
+				),
+				Nodes(
+					{
+						4,
+					}
+				),
+				Nodes(
+					{
+						5,
+					}
+				),
+				Nodes(
+					{
+						6,
+					}
+				),
+				Nodes(
+					{
+						7,
+					}
+				),
+				Nodes(
+					{
+						8,
+					}
+				),
+				Nodes(
+					{
+						9,
+					}
+				),
+				Nodes(
+					{
+						0,
+					}
+				),
+			}
+		)
 
 	#	Check edgelist.
 		assert graph.edge_list == Edges(

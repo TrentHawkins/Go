@@ -26,7 +26,7 @@ Undirected graph requires overriding some methods to account for symmetric edges
 """
 
 
-from typing import Hashable
+from typing import Callable, Hashable
 
 Node = Hashable  # Node type to be hashable to be used as keys.
 Nodes = frozenset[Node]  # A cluster of nodes.
@@ -34,6 +34,7 @@ Clusters = set[Nodes]  # A collection of clusters.
 Neighborhood = set[Node]  # The neighborhood of a node. Forms edges given the node.
 
 Edge = tuple[Node, Node]  # An edge is a pair of nodes.
+Condition = Callable[[Node], bool]
 Edges = frozenset[Edge]  # An edge list.
 
 Graph = dict[Node, Neighborhood]  # A graph as sets of neighborhoods keyed by their node.
@@ -266,8 +267,8 @@ class Directed(Graph):
 
 	"""Graph special methods:
 		edge_list: List edges in graph as pairs of connected nodes.
-		cluster: Get cluster node belong to.
-		clusters: List disjoint clusters of inter-connected nodes.
+		cluster: Get cluster node belong to matching condition.
+		clusters: List disjoint clusters of inter-connected nodes matching condition.
 		Boundary: Collect all nodes not in the cluster but connected to it.
 	"""
 
@@ -276,23 +277,27 @@ class Directed(Graph):
 		"""List edges in graph as pairs of connected nodes."""
 		return Edges((node, adjacent_node) for node in self for adjacent_node in self[node])
 
-	def cluster(self, node: Node) -> Nodes:
+	def cluster(self, node: Node, condition: Condition = lambda _: True) -> Nodes:
 		"""Get cluster node belong to."""
 		neighborhood = self.pop(node)
-		nodes = {node}.union(*(self.cluster(adjacent_node) for adjacent_node in neighborhood))
+		nodes = {node}
 
-	#	Stich graph back up when done (back-propagation)
+	#	Propagate through neighbors.
+		for adjacent_node in neighborhood:
+			if condition(adjacent_node):
+				nodes.update(self.cluster(adjacent_node, condition))
+
+	#	Stich graph back up when done (back-propagation).
 		self.add(node, neighborhood)
 
 		return Nodes(nodes)
 
-	@property
-	def clusters(self) -> Clusters:
-		"""List disjoint subgraphs of inter-connected nodes."""
-		return Clusters(self.cluster(node) for node in self)
+	def clusters(self, condition: Condition = lambda _: True) -> Clusters:
+		"""List disjoint subgraphs of inter-connected nodes, matching condition."""
+		return Clusters(self.cluster(node, condition) for node in self.copy())
 
 	def boundary(self, cluster: Nodes) -> Nodes:
-		"""Get all nodes not in the cluster but connected to it."""
+		"""Get all nodes not in the cluster but connected to it, matching condition."""
 		return Nodes().union(*(self[node] for node in cluster)).difference(cluster)
 
 
