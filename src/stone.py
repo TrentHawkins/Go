@@ -16,25 +16,29 @@ from .point import Point
 class Color(IntFlag):
 	"""Color of an intersection."""
 
-	black = +1
-	empty = +0
-	white = -1
+	black = 2
+	empty = 1
+	white = 4
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		"""Each color is actually a puc."""
 		return {
-			+1: "\U000026AB",
-			+0: "\U0001F7E4",
-			-1: "\U000026AA",
+			self.black: "\U000026AB",
+			self.empty: "\U0001F7E4",
+			self.white: "\U000026AA",
 		}[self]
 
 	def __ne__(self, other) -> bool:
 		"""Empty squares are foes with one another."""
 		return abs(self - other) == 2
 
+	@classmethod
+	def _missing_(cls, _):
+		return cls.empty
 
-@dataclass
-class Stone:
+
+@dataclass(eq=False)
+class Stone(Point):
 	"""A stone.
 
 	Go is played with playing tokens known as stones.
@@ -52,57 +56,12 @@ class Stone:
 		Point(+0, -1),  # south
 	}
 
-	def __init__(self, point: Point | tuple[int, int], color: Color | str = Color.empty):
-		"""Translate semantic input to actual attributes."""
-		self.point: Point = Point(*point) if isinstance(point, tuple) else point
-		self.color: Color = Color[color] if isinstance(color, str) else color
+	color: Color | str = Color.empty
 
-	def __repr__(self):
+	def __post_init__(self):
+		"""Translate color name to color."""
+		self.color = Color[self.color] if isinstance(self.color, str) else self.color
+
+	def __str__(self):
 		"""Assume color appearance."""
-		return repr(self.color)
-
-	def __hash__(self):
-		"""Hash only based on intersection."""
-		return hash(self.point)
-
-	def __eq__(self, other):
-		"""Compare based on allegiance only."""
-		return self.color == other.color
-
-	def __ne__(self, other):
-		"""Compare based on allegiance only."""
-		return self.color != other.color
-
-	def liberty(self, point: Point) -> bool:
-		"""Is point a liberty of stone."""
-		return bool(point)
-
-	def ally(self, point: Point) -> bool:
-		"""Is point a liberty of stone."""
-		return bool(point)
-
-	@property
-	def liberties(self):
-		"""Adjacent free intersections."""
-		liberties = set[Point]()
-
-		for adjacent in self.adjacencies:
-			point = self.point + adjacent  # type: ignore
-
-			if self.liberty(point):
-				liberties.add(point)
-
-		return liberties
-
-	@property
-	def allies(self):
-		"""Adjacent intersections with an ally."""
-		allies = set[Point]()
-
-		for adjacent in self.adjacencies:
-			point = self.point + adjacent  # type: ignore
-
-			if self.ally(point):
-				allies.add(point)
-
-		return allies
+		return str(self.color) + "\n" if self.file == self.size else str(self.color)

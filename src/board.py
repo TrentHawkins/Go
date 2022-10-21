@@ -2,18 +2,19 @@
 
 A point on the board where a horizontal line meets a vertical line is called an intersection. Two intersections are said to be
 adjacent if they are distinct and connected by a horizontal or vertical line with no other intersections between them.
+
+The board file format starts with a board descriptor line, followed by a flag.
 """
 
 
-from types import MethodType
-from typing import Generator
+from operator import attrgetter
+from typing import Callable
 
-from .graph import Undirected
-from .point import Point
+from .graph import Neighborhood, Undirected
 from .stone import Color, Stone
 
 
-class Board:
+class Board(Undirected):
 	"""Go board.
 
 	The condition that the intersections be "distinct" is included to ensure that an intersection is not considered to be adjacent
@@ -27,74 +28,47 @@ class Board:
 	13×13.
 	"""
 
-	def __init__(self, size: int = 9):
+	def __init__(self, size: int = 9, color: Callable[[], str] = lambda: "empty"):
 		"""Build board."""
 		self.size: int = size
 		self.range: range = range(-self.size, self.size + 1)
 
 	#	Initialize empty board.
-		self.stones = [
-			[
-				Stone(
-					Point(
-						file,
-						rank, size=self.size
-					),
-					color=Color.empty,
-				) for file in self.range
-			] for rank in self.range
-		]
+		super().__init__()
 
-	#	Provide board context for stone liberty depiction.
-		def liberty(stone: Stone, point: Point) -> bool:
-			f"""{stone.liberty.__doc__}"""
-			return stone.__class__.liberty(stone, point) and self[point].color == Color.empty
+		for rank in self.range:
+			for file in self.range:
+				stone = Stone(
+					rank,
+					file,
+					size=self.size, color=color()
+				)
+				neighborhood = Neighborhood()
 
-		for stone in self:
-			stone.liberty = MethodType(liberty, stone)
+				for adjacent_stone in stone.adjacencies:
+					neighbor = stone + adjacent_stone
 
-	#	Provide board context for stone ally depiction.
-		def ally(stone: Stone, point: Point) -> bool:
-			f"""{stone.ally.__doc__}"""
-			return stone.__class__.ally(stone, point) and self[point].color == stone.color
+					if neighbor:
+						neighborhood.add(neighbor)
 
-		for stone in self:
-			stone.ally = MethodType(ally, stone)
+				self[stone] = neighborhood
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		"""Draw a board."""
-		return \
-			f"\n    {''.join(f'{file:+2d}' for file in self.range)}    \n\n" + \
-			"\n".join(
-				f"{rank:+2d}  " + "".join(
-					repr(self[file, rank]) for file in self.range
-				) + f"  {rank:+2d}" for rank in self.range
-			) + \
-			f"\n\n    {''.join(f'{file:+2d}' for file in self.range)}    \n"
+		return "".join(str(stone) for stone in sorted(self, key=attrgetter("rank", "file")))
 
-	def __len__(self) -> int:
-		"""Area of the board."""
-		return len(self.stones) ** 2
+	@classmethod
+	def load(cls, filename: str):
+		"""Load board state from file."""
+		with open(filename, mode="rt", encoding="utf-8") as board:
+			def read_strip(size: int | None = None) -> str:
+				output = board.read(size)
 
-	def __getitem__(self, point: Point | tuple[int, int]) -> Stone:
-		"""Set stone of color on point."""
-		point = Point(*point, size=self.size) if isinstance(point, tuple) else point
-		return self.stones[point.rank + self.size][point.file + self.size]
+				return output if not output.isspace() else read_strip(size)
 
-	def __setitem__(self, point: Point | tuple[int, int], color: Color | str):
-		"""Set stone of color on point."""
-		color = Color[color] if isinstance(color, str) else color
-		self[point].color = color
+			return cls(size=int(read_strip(1)), color=lambda: Color(read_strip(1)).name or "empty")
 
-	def __delitem__(self, point: tuple[int, int]):
-		"""Set stone of color on intersection."""
-		self[point] = "empty"
-
-	def __iter__(self) -> Generator[Stone, None, None]:
-		"""Iterate through all points on the board."""
-		for rank in self.stones:
-			for stone in rank:
-				yield stone
-
-	def cluster(self, stone: Stone):
-		"""Get connected cluster stone belongs to."""
+	def save(self, filename: str):
+		"""Save board state to file."""
+		with open(filename, mode="wt", encoding="utf-8") as board:
+			board.write(f"{self.size}\n\n{self}")

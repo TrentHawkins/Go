@@ -8,78 +8,30 @@ class TestBoard:
 		"""Test board creation."""
 		from src.board import Board
 
-	#	A simple board.
-		goban19x19 = Board()
+	#	Assert generated sizes match board spec.
+		for size in range(10):
+			assert len(Board(size=size)) == (2 * size + 1) ** 2
 
-	#	Some smaller boards.
-		goban17x17 = Board(size=8)
-		goban13x13 = Board(size=6)
-
-	#	A singular board:
-		gobanPoint = Board(size=0)
-
-	def test_liberty(self):
-		"""Test liberty conditioning."""
+	def test_io(self):
+		"""Test saving the board state."""
 		from src.board import Board
+		from src.stone import Stone
 
-	#	A new board.
-		goban = Board()
+	#	Use a simple board.
+		board = Board(1)
 
-	#	See the liberties of white going one by one.
-		goban[+0, +0] = "white"; assert len(goban[+0, +0].liberties) == 4
-		goban[+1, +0] = "black"; assert len(goban[+0, +0].liberties) == 3
-		goban[+0, +1] = "black"; assert len(goban[+0, +0].liberties) == 2
-		goban[-1, +0] = "black"; assert len(goban[+0, +0].liberties) == 1
-		goban[+0, -1] = "black"; assert len(goban[+0, +0].liberties) == 0
+	#	Make some changes.
+		board[Stone(+0, +0, size=board.size, color="white")] = board[Stone(+0, +0, size=board.size)]
+		board[Stone(+1, +0, size=board.size, color="black")] = board[Stone(+1, +0, size=board.size)]
+		board[Stone(+0, +1, size=board.size, color="black")] = board[Stone(+0, +1, size=board.size)]
+		board[Stone(-1, +0, size=board.size, color="black")] = board[Stone(-1, +0, size=board.size)]
+		board[Stone(+0, -1, size=board.size, color="black")] = board[Stone(+0, -1, size=board.size)]
 
-	#	Side stones only have 3 liberites. Corner ones only have 2.
-		goban[+9, +0] = "white"; assert len(goban[+9, +0].liberties) == 3
-		goban[+9, +9] = "white"; assert len(goban[+9, +9].liberties) == 2
-		goban[+0, +9] = "white"; assert len(goban[+0, +9].liberties) == 3
-		goban[-9, +9] = "white"; assert len(goban[-9, +9].liberties) == 2
-		goban[-9, +0] = "white"; assert len(goban[-9, +0].liberties) == 3
-		goban[-9, -9] = "white"; assert len(goban[-9, -9].liberties) == 2
-		goban[+0, -9] = "white"; assert len(goban[+0, -9].liberties) == 3
-		goban[+9, -9] = "white"; assert len(goban[+9, -9].liberties) == 2
+	#	Save board.
+		board.save("test.board")
 
-
-class TestStone:
-	"""Test stone placement."""
-
-	def test_color(self):
-		"""Test allegiance."""
-		from src.point import Point
-		from src.stone import Color, Stone
-
-	#	Assert intersections are properly hashed.
-		assert len(
-			{
-				Stone(Point(-1, +1), color=Color.white),
-				Stone(Point(+1, -1), color=Color.black),
-				Stone(Point(+0, +0)),
-			}
-		) == 3
-
-	#	Same color means friends even on a different intersection.
-		assert Stone(Point(-1, +1), color=Color.white) == Stone(Point(+1, -1), color=Color.white)
-		assert Stone(Point(-1, +1), color=Color.black) == Stone(Point(+1, -1), color=Color.black)
-		assert Stone(Point(-1, +1), color=Color.empty) == Stone(Point(+1, -1), color=Color.empty)
-
-	#	Different color means foes even on the same intersection.
-		assert Stone(Point(+0, +0), color=Color.white) != Stone(Point(+0, +0), color=Color.black)
-		assert Stone(Point(+0, +0), color=Color.black) != Stone(Point(+0, +0), color=Color.white)
-
-	#	Empty is not friend:
-		assert not Stone(Point(+0, +0), color=Color.white) == Stone(Point(+0, +0), color=Color.empty)
-		assert not Stone(Point(+0, +0), color=Color.black) == Stone(Point(+0, +0), color=Color.empty)
-		assert not Stone(Point(+0, +0), color=Color.empty) == Stone(Point(+0, +0), color=Color.white)
-		assert not Stone(Point(+0, +0), color=Color.empty) == Stone(Point(+0, +0), color=Color.black)
-
-	#	Empty is not foe:
-		assert not Stone(Point(+0, +0), color=Color.white) != Stone(Point(+0, +0), color=Color.empty)
-		assert not Stone(Point(+0, +0), color=Color.black) != Stone(Point(+0, +0), color=Color.empty)
-		assert not Stone(Point(+0, +0), color=Color.empty) != Stone(Point(+0, +0), color=Color.white)
-		assert not Stone(Point(+0, +0), color=Color.empty) != Stone(Point(+0, +0), color=Color.black)
+	#	Reload save board and assert it is the same one as the one here.
+		assert board == Board.load("test.board")
 
 
 class TestIntersection:
@@ -302,7 +254,7 @@ class TestUndirected:
 		assert graph[0] == Neighborhood()
 
 	#	Assert clusters are as indicated by the directed initialization of this undirected graph.
-		assert graph.clusters == Clusters(
+		assert graph.clusters() == Clusters(
 			{
 				Nodes(
 					{
@@ -336,6 +288,62 @@ class TestUndirected:
 	#	Assert nodes belong to their clusters.
 		for node in graph:
 			assert node in graph.cluster(node)
+
+	#	If condition evaluates to false, Nodes are isolated.
+		assert graph.clusters(lambda _: False) == Clusters(
+			{
+				Nodes(
+					{
+						1,
+					}
+				),
+				Nodes(
+					{
+						2,
+					}
+				),
+				Nodes(
+					{
+						3,
+					}
+				),
+				Nodes(
+					{
+						4,
+					}
+				),
+				Nodes(
+					{
+						5,
+					}
+				),
+				Nodes(
+					{
+						6,
+					}
+				),
+				Nodes(
+					{
+						7,
+					}
+				),
+				Nodes(
+					{
+						8,
+					}
+				),
+				Nodes(
+					{
+						9,
+					}
+				),
+				Nodes(
+					{
+						0,
+					}
+				),
+			}
+		)
 
 	#	Check edgelist.
 		assert graph.edge_list == Edges(
