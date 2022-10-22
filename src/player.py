@@ -11,11 +11,29 @@ play begins, to compensate for the difference in strength.
 """
 
 
+from dataclasses import dataclass, field
+
+from .board import Board
+from .stone import Color
+
+
+@dataclass
 class Player:
 	"""A player.
 
 	Contains the clusters of the board graph belonging to the player.
 	Via mutability tricks, the clusters still have access to neighborhoods on the whole board to use as liberties.
+
+	Attributes:
+		name: Of player.
+		color: Of player's stones.
+		board: The player is playing on.
 	"""
 
-	...
+	name: str = field()
+	color: Color | str = field()
+	board: Board = field(default=Board())
+
+	def __post_init__(self):
+		"""Translate player's color name to color."""
+		self.color = Color[self.color] if isinstance(self.color, str) else self.color

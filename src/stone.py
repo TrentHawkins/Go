@@ -46,7 +46,7 @@ class Stone(Point):
 
 	Attributes:
 		color: Allegiance of stone.
-		point: Intersection the stone is on (irrelevant on which board.
+			default: Empty.
 	"""
 
 	adjacencies: ClassVar[set[Point]] = {

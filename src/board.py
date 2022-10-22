@@ -27,6 +27,10 @@ class Board(Undirected):
 
 	Though 19×19 boards are standard, go can be played on another size board. Particularly common sizes for quick games are 9×9 and
 	13×13.
+
+	Attributes:
+		size: Half of the board.
+		range: The whole board.
 	"""
 
 	def __init__(self, size: int = 9, color: Callable[[], str] = lambda: "empty"):
