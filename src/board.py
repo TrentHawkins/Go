@@ -8,6 +8,7 @@ The board file format starts with a board descriptor line, followed by a flag.
 
 
 from operator import attrgetter
+from random import choice, randint, seed
 from typing import Callable
 
 from .graph import Neighborhood, Undirected
@@ -15,7 +16,6 @@ from .point import Point
 from .stone import Color, Stone
 
 Stones = frozenset[Stone]
-
 Base = Stones
 Bases = set[Base]
 
@@ -101,6 +101,25 @@ class Board(Undirected):
 	def __eq__(self, other):
 		"""Is necessary since stones are indistinguishable."""
 		return super(Board, self).__eq__(other) and all(stone.color == other[stone].color for stone in self)
+
+	@classmethod
+	def random(cls, size: int = 9, board_seed: int | None = None):
+		"""Get a random board."""
+		seed(board_seed)
+
+		return cls(
+			size=size,
+			color=lambda: Color[
+				choice(
+					[
+						"white",
+						"empty",
+						"empty",
+						"black",
+					]
+				)
+			].name
+		)
 
 	@classmethod
 	def load(cls, filename: str):

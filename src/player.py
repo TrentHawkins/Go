@@ -13,8 +13,8 @@ play begins, to compensate for the difference in strength.
 
 from dataclasses import dataclass, field
 
-from .board import Board
-from .stone import Color
+from .board import Base, Bases, Board
+from .stone import Color, Stone
 
 
 @dataclass
@@ -30,10 +30,21 @@ class Player:
 		board: The player is playing on.
 	"""
 
-	name: str = field()
-	color: Color | str = field()
-	board: Board = field(default=Board())
+	name: str = field(default_factory=input)
+
+	color: Color | str = field(default=Color.empty)
+	board: Board = field(default_factory=Board)
 
 	def __post_init__(self):
 		"""Translate player's color name to color."""
 		self.color = Color[self.color] if isinstance(self.color, str) else self.color
+		self.color_similarity = lambda stone: stone.color == self.color
+
+	def base(self, stone: Stone) -> Base:
+		"""Get base stone belongs to."""
+		return self.board.cluster(stone, condition=self.color_similarity)
+
+	@property
+	def bases(self) -> Bases:
+		"""Get bases belonging to player."""
+		return self.board.clusters(condition=self.color_similarity)

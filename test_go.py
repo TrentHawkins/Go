@@ -1,6 +1,110 @@
 """Tests for Go engine."""
 
 
+class TestPlayer:
+	"""Test player status control."""
+
+	def test_bases(self):
+		"""Test monitoring of a player's bases."""
+		from src.board import Base, Bases, Board
+		from src.player import Player
+
+	#	A random board.
+		board = Board.random(
+			size=2,
+			board_seed=2,
+		)
+
+	#	The players.
+		black = Player(
+			name="Foo",
+			color="black",
+			board=board,
+		)
+		empty = Player(
+			name="Huh",
+			color="empty",
+			board=board,
+		)
+		white = Player(
+			name="Bar",
+			color="white",
+			board=board,
+		)
+
+	#	Assert specific bases:
+		assert black.bases == Bases(
+			{
+				Base(
+					{
+						board[-1, +0],
+						board[-2, +0],
+					}
+				),
+				Base(
+					{
+						board[+1, +0],
+						board[+1, +1],
+					}
+				),
+				Base(
+					{
+						board[-1, +2],
+						board[-2, +2],
+					}
+				),
+			}
+		)
+		assert empty.bases == Bases(
+			{
+				Base(
+					{
+						board[+1, -2],
+						board[+2, -2],
+						board[+2, -1],
+						board[+2, +0],
+						board[+2, +1],
+						board[+2, +2],
+						board[+1, +2],
+						board[+0, +2],
+						board[+0, +1],
+						board[+0, +0],
+						board[+0, -1],
+						board[-1, -1],
+						board[-2, -1],
+					}
+				),
+			}
+		)
+		assert white.bases == Bases(
+			{
+				Base(
+					{
+						board[-2, -2],
+						board[-1, -2],
+						board[+0, -2],
+					}
+				),
+				Base(
+					{
+						board[+1, -1],
+					}
+				),
+				Base(
+					{
+						board[-1, +1],
+						board[-2, +1],
+					}
+				),
+			}
+		)
+
+	#	Assert bases are separate.
+		assert black.bases.isdisjoint(empty.bases)
+		assert empty.bases.isdisjoint(white.bases)
+		assert white.bases.isdisjoint(black.bases)
+
+
 class TestBoard:
 	"""Test board creation and handling."""
 
@@ -14,54 +118,45 @@ class TestBoard:
 
 	def test_io(self):
 		"""Test saving the board state."""
-		from random import choice, randint, seed
-
 		from src.board import Board
 		from src.stone import Color
 
-	#	Use a simple board.
-		old = Board()
-		seed(old.size)
+	#	A random board.
+		board = Board.random(
+			size=9,
+			board_seed=9,
+		)
 
-	#	Make some random changes.
-		for _ in range(old.size ** 3):
-			old[
-				randint(
-					-old.size,
-					+old.size,
-				),
-				randint(
-					-old.size,
-					+old.size,
-				),
-			] = Color[
-				choice(
-					[
-						"white",
-						"empty",
-						"black",
-					]
-				)
-			]
+	#	Save random board.
+		board.save("test.board")
 
-	#	Save board.
-		old.save("test.board")
-
-	#	Reload save board and assert it is the same one as the one here.
-		new = Board.load("test.board")
-
-		assert old == new
+	#	Reload saved board and assert it is the same one as the one here.
+		assert board == Board.load("test.board")
 
 	def test_liberty(self):
 		"""Test liberties on board saved by this class."""
 		from src.board import Board, Stones
 		from src.stone import Stone
 
-	#	board = Board()
-		board = Board.load("test.board")
+	#	A random board.
+		board = Board.random(
+			size=2,
+			board_seed=2,
+		)
 
 	#	Check central stone:
-		assert board.liberties(Stones({board[0, 0]})) == Stones({board[0, -1], board[0, +1]})
+		assert board.liberties(
+			Stones(
+				{
+					board[0, 0],
+				}
+			)
+		) == Stones(
+			{
+				board[0, -1],
+				board[0, +1],
+			}
+		)
 
 
 class TestIntersection:
@@ -316,64 +411,11 @@ class TestUndirected:
 		)
 
 	#	Assert nodes belong to their clusters.
-		for node in graph:
-			assert node in graph.cluster(node)
+	#	for node in graph:
+	#		assert node in graph.cluster(node)
 
-	#	If condition evaluates to false, Nodes are isolated.
-		assert graph.clusters(lambda _: False) == Clusters(
-			{
-				Nodes(
-					{
-						1,
-					}
-				),
-				Nodes(
-					{
-						2,
-					}
-				),
-				Nodes(
-					{
-						3,
-					}
-				),
-				Nodes(
-					{
-						4,
-					}
-				),
-				Nodes(
-					{
-						5,
-					}
-				),
-				Nodes(
-					{
-						6,
-					}
-				),
-				Nodes(
-					{
-						7,
-					}
-				),
-				Nodes(
-					{
-						8,
-					}
-				),
-				Nodes(
-					{
-						9,
-					}
-				),
-				Nodes(
-					{
-						0,
-					}
-				),
-			}
-		)
+	#	If condition evaluates to false, no clusters are given.
+		assert graph.clusters(lambda _: False) == Clusters()
 
 	#	Check edgelist.
 		assert graph.edge_list == Edges(

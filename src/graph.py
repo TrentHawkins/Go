@@ -278,24 +278,32 @@ class Directed(Graph):
 		"""List edges in graph as pairs of connected nodes."""
 		return Edges((node, adjacent_node) for node in self for adjacent_node in self.__getitem__(node))
 
-	def cluster(self, node: Node, condition: Condition = lambda _: True) -> Cluster:
+	def cluster(self, node: Node, condition: Condition = lambda _: False) -> Cluster:
 		"""Get cluster node belong to."""
-		neighborhood = self.pop(node)
-		nodes = {node}
+		nodes = Neighborhood()
 
-	#	Propagate through neighbors.
-		for adjacent_node in neighborhood:
-			if condition(adjacent_node):
+	#	If current node fails the condition, stop propagating.
+		if condition(node):
+			nodes.add(node)
+			neighborhood = self.pop(node)
+
+		#	Propagate through neighbors, conditioning will be applied on the nested level.
+			for adjacent_node in neighborhood:
 				nodes.update(self.cluster(adjacent_node, condition))
 
-	#	Stich graph back up when done (back-propagation).
-		self.add(node, neighborhood)
+		#	Stich graph back up when done (back-propagation).
+			self.add(node, neighborhood)
 
 		return Nodes(nodes)
 
 	def clusters(self, condition: Condition = lambda _: True) -> Clusters:
 		"""List disjoint subgraphs of inter-connected nodes, matching condition."""
-		return Clusters(self.cluster(node, condition) for node in self.copy())
+		clusters = Clusters(self.cluster(node, condition) for node in self.copy())
+
+	#	Remove the empty cluster that is present for non-default condition.
+		clusters.discard(Cluster())
+
+		return clusters
 
 	def boundary(self, cluster: Nodes) -> Nodes:
 		"""Get all nodes not in the cluster but connected to it, matching condition."""
