@@ -47,13 +47,6 @@ class Point:
 			self.rank == other.rank
 		)
 
-	def __ne__(self, other):
-		"""Equate by rank and file only."""
-		return (
-			self.file != other.file or
-			self.rank != other.rank
-		)
-
 	def __bool__(self) -> bool:
 		"""Intersection must be within board boundaries."""
 		return (

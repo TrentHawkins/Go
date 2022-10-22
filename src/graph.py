@@ -107,35 +107,35 @@ class Directed(Graph):
 		^ : Complement graph union with graph intersection.
 	"""
 
-	def __ior__(self, other: Graph):
+	def __ior__(self, other):
 		"""Unite graph with another in-place."""
 		self.update(other)
 
-	def __or__(self, other: Graph):
+	def __or__(self, other):
 		"""Unite graph with another."""
 		return self.union(other)
 
-	def __isub__(self, other: Graph):
+	def __isub__(self, other):
 		"""Subtract graph from current in-place."""
 		self.difference_update(other)
 
-	def __sub__(self, other: Graph):
+	def __sub__(self, other):
 		"""Subtract graph from current."""
 		return self.difference(other)
 
-	def __iand__(self, other: Graph):
+	def __iand__(self, other):
 		"""Intersect graph with another in-place."""
 		self.intersection_update(other)
 
-	def __and__(self, other: Graph):
+	def __and__(self, other):
 		"""Intersect graph with another."""
 		return self.intersection(other)
 
-	def __ixor__(self, other: Graph):
+	def __ixor__(self, other):
 		"""Complement graph union with graph intersection in-place."""
 		self.symmetric_difference_update(other)
 
-	def __xor__(self, other: Graph):
+	def __xor__(self, other):
 		"""Complement graph union with graph intersection."""
 		return self.symmetric_difference(other)
 
@@ -144,19 +144,19 @@ class Directed(Graph):
 		>= : If current a supergraph of the other.
 	"""
 
-	def __le__(self, other: Graph):
+	def __le__(self, other):
 		"""Is current a subgraph of the other."""
 		return self.issubset(other)
 
-	def __ge__(self, other: Graph):
+	def __ge__(self, other):
 		"""Is current a supergraph of the other."""
 		return self.issuperset(other)
 
-	def __lt__(self, other: Graph):
+	def __lt__(self, other):
 		"""Is current a strict subgraph of the other."""
 		return self <= other and self != other
 
-	def __gt__(self, other: Graph):
+	def __gt__(self, other):
 		"""Is current a strict supergraph of the other."""
 		return self >= other and self != other
 
@@ -215,53 +215,53 @@ class Directed(Graph):
 		issuperset:  If current a supergraph of the other.
 	"""
 
-	def update(self, other: Graph):
+	def update(self, other):
 		"""Unite graph with another in-place."""
 		for node, neighbohood in other.items():
 			self.add(node, neighbohood)  # Add node with neighborhood, symmetrically.
 
-	def union(self, other: Graph):
+	def union(self, other):
 		"""Unite graph with another."""
 		undirected = self.__class__(self.copy())
 		undirected.update(other)
 
 		return undirected
 
-	def difference_update(self, other: Graph):
+	def difference_update(self, other):
 		"""Subtract graph from current in-place."""
 		for node, neighbohood in other.items():
 			self.pop(node, neighbohood)  # Add node with neighborhood, symmetrically.
 
-	def difference(self, other: Graph):
+	def difference(self, other):
 		"""Subtract graph from current."""
 		undirected = self.__class__(self.copy())
 		undirected.difference_update(other)
 
 		return undirected
 
-	def intersection_update(self, other: Graph):
+	def intersection_update(self, other):
 		"""Intersect graph with another in-place in-place."""
 		self.difference_update(self.difference(other))
 
-	def intersection(self, other: Graph):
+	def intersection(self, other):
 		"""Intersect graph with another in-place."""
 		return self.difference(self.difference(other))
 
-	def symmetric_difference_update(self, other: Graph):
+	def symmetric_difference_update(self, other):
 		"""Complement graph union with graph intersection in-place."""
 		self.update(other)
 		self.difference_update(self.intersection(other))
 
-	def symmetric_difference(self, other: Graph):
+	def symmetric_difference(self, other):
 		"""Complement graph union with graph intersection."""
 		return self.union(other).difference(self.intersection(other))
 
-	def issubset(self, other: Graph):
+	def issubset(self, other):
 		"""Check if the current graph is a subgraph of the other graph."""
 		return Neighborhood(self.keys()).issubset(Neighborhood(other.keys())) \
 			and all(super(Directed, self).__getitem__(node).issubset(other.__getitem__(node)) for node in self)
 
-	def issuperset(self, other: Graph):
+	def issuperset(self, other):
 		"""Check if the current graph is a supergraph of the other graph."""
 		return Neighborhood(self.keys()).issuperset(Neighborhood(other.keys())) \
 			and all(super(Directed, self).__getitem__(node).issuperset(other.__getitem__(node)) for node in other)

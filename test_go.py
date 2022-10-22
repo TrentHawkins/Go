@@ -14,45 +14,54 @@ class TestBoard:
 
 	def test_io(self):
 		"""Test saving the board state."""
-		from random import randint
+		from random import choice, randint, seed
 
 		from src.board import Board
 		from src.stone import Color
 
 	#	Use a simple board.
-		board = Board()
+		old = Board()
+		seed(old.size)
 
 	#	Make some random changes.
-		for _ in range(board.size ** 3):
-			rank = randint(
-				-board.size,
-				+board.size,
-			)
-			file = randint(
-				-board.size,
-				+board.size,
-			)
-			board[
+		for _ in range(old.size ** 3):
+			old[
 				randint(
-					-board.size,
-					+board.size,
+					-old.size,
+					+old.size,
 				),
 				randint(
-					-board.size,
-					+board.size,
+					-old.size,
+					+old.size,
 				),
-			] = Color(
-				randint(
-					-1,
-					+1,
-				),
-			)
+			] = Color[
+				choice(
+					[
+						"white",
+						"empty",
+						"black",
+					]
+				)
+			]
 
 	#	Save board.
-		board.save("test.board")
+		old.save("test.board")
 
 	#	Reload save board and assert it is the same one as the one here.
-		assert board == Board.load("test.board")
+		new = Board.load("test.board")
+
+		assert old == new
+
+	def test_liberty(self):
+		"""Test liberties on board saved by this class."""
+		from src.board import Board, Stones
+		from src.stone import Stone
+
+	#	board = Board()
+		board = Board.load("test.board")
+
+	#	Check central stone:
+		assert board.liberties(Stones({board[0, 0]})) == Stones({board[0, -1], board[0, +1]})
 
 
 class TestIntersection:

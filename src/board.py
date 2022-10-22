@@ -10,7 +10,7 @@ The board file format starts with a board descriptor line, followed by a flag.
 from operator import attrgetter
 from typing import Callable
 
-from .graph import Cluster, Clusters, Neighborhood, Undirected
+from .graph import Neighborhood, Undirected
 from .point import Point
 from .stone import Color, Stone
 
@@ -44,24 +44,30 @@ class Board(Undirected):
 		self.range: range = range(-self.size, self.size + 1)
 
 	#	Initialize empty board.
-		super().__init__()
+		super(Board, self).__init__()
 
+	#	First add the nodes blank.
 		for rank in self.range:
 			for file in self.range:
 				stone = Stone(
-					rank,
 					file,
+					rank,
 					size=self.size, color=color()
 				)
-				neighborhood = Neighborhood()
 
-				for adjacent_stone in stone.adjacencies:
-					neighbor = stone + adjacent_stone
+				super(Board, self).__setitem__(stone)
 
-					if neighbor:
-						neighborhood.add(neighbor)
+	#	Then set their neighborhoods, so that they are up to date.
+		for stone in self.copy():
+			neighborhood = Neighborhood()
 
-				super().__setitem__(stone, neighborhood)
+			for adjacent_point in stone.adjacencies:
+				neighbor = stone + adjacent_point
+
+				if neighbor:
+					neighborhood.add(self[neighbor])
+
+			super(Board, self).__setitem__(stone, neighborhood)
 
 	def __str__(self) -> str:
 		"""Draw a board."""
@@ -73,7 +79,7 @@ class Board(Undirected):
 		color = Color[color] if isinstance(color, str) else color
 		stone = Stone(**vars(point), color=color)
 
-		super().__setitem__(stone, super().__getitem__(point))
+		super(Board, self).__setitem__(stone, super(Board, self).__getitem__(point))
 
 	def __getitem__(self, point: Point | tuple[int, int]) -> Stone:
 		"""Get color of stone. Getting its graph neighbothood is meaningless at user level."""
@@ -81,7 +87,7 @@ class Board(Undirected):
 
 		for stone in self:
 			if point == stone:
-				return stone.color.name  # type: ignore
+				return stone
 
 		else:
 			raise KeyError("Stone is not on the board.")
@@ -92,6 +98,10 @@ class Board(Undirected):
 
 		self.__setitem__(point)
 
+	def __eq__(self, other):
+		"""Is necessary since stones are indistinguishable."""
+		return super(Board, self).__eq__(other) and all(stone.color == other[stone].color for stone in self)
+
 	@classmethod
 	def load(cls, filename: str):
 		"""Load board state from file."""
@@ -101,7 +111,7 @@ class Board(Undirected):
 
 				return output if not output.isspace() else read_strip(size)
 
-			return cls(size=int(read_strip(1)), color=lambda: Color(read_strip(1)).name or "empty")
+			return cls(size=int(read_strip(1)), color=lambda: Color(read_strip(1)).name)
 
 	def save(self, filename: str):
 		"""Save board state to file."""

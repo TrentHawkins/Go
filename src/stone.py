@@ -6,35 +6,27 @@ to be insufficient, extra stones will be used.
 
 
 from dataclasses import dataclass, field
-from enum import IntEnum, unique
+from enum import Enum, unique
 from typing import ClassVar
 
 from .point import Point
 
 
 @unique
-class Color(IntEnum):
+class Color(Enum):
 	"""Color of an intersection."""
 
-	black = +1
-	empty = +0
-	white = -1
+	black = "\U000026AB"
+	empty = "\U0001F7E4"
+	white = "\U000026AA"
 
 	def __str__(self) -> str:
 		"""Each color is actually a puc."""
-		return {
-			self.black: "\U000026AB",
-			self.empty: "\U0001F7E4",
-			self.white: "\U000026AA",
-		}[self]
+		return self.value
 
 	def __bool__(self):
 		"""Is false if empty."""
-		return self.value != 0
-
-	def __ne__(self, other) -> bool:
-		"""Empty squares are foes with one another."""
-		return abs(self.value - other.value) == 2
+		return self != self.empty
 
 	@classmethod
 	def _missing_(cls, _):
@@ -69,3 +61,17 @@ class Stone(Point):
 	def __str__(self):
 		"""Assume color appearance."""
 		return str(self.color) + "\n" if self.file == self.size else str(self.color)
+
+	def __add__(self, other: Point):
+		f"""Shift stone by intersection."""
+		return self.__class__(
+			self.file + other.file,
+			self.rank + other.rank, size=self.size, color=self.color
+		)
+
+	def __sub__(self, other: Point):
+		f"""Shift stone by intersection."""
+		return self.__class__(
+			self.file - other.file,
+			self.rank - other.rank, size=self.size, color=self.color
+		)
