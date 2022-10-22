@@ -6,19 +6,19 @@ to be insufficient, extra stones will be used.
 
 
 from dataclasses import dataclass
-from enum import IntFlag, unique
+from enum import IntEnum, unique
 from typing import ClassVar
 
 from .point import Point
 
 
 @unique
-class Color(IntFlag):
+class Color(IntEnum):
 	"""Color of an intersection."""
 
-	black = 2
-	empty = 1
-	white = 4
+	black = +1
+	empty = +0
+	white = -1
 
 	def __str__(self) -> str:
 		"""Each color is actually a puc."""
