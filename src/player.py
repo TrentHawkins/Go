@@ -48,3 +48,11 @@ class Player:
 	def bases(self) -> Bases:
 		"""Get bases belonging to player."""
 		return self.board.clusters(condition=self.color_similarity)
+
+	def kill(self):
+		"""Kill captured bases of player."""
+		for base in self.bases:
+			if not self.board.liberties(base):
+				for stone in base:
+					del stone.color
+					del self.board[stone]

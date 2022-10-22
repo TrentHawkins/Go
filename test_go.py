@@ -13,6 +13,7 @@ class TestPlayer:
 		board = Board.random(
 			size=2,
 			board_seed=2,
+			emptiness=2,
 		)
 
 	#	The players.
@@ -104,6 +105,44 @@ class TestPlayer:
 		assert empty.bases.isdisjoint(white.bases)
 		assert white.bases.isdisjoint(black.bases)
 
+	def test_capture(self):
+		"""Test the elimination of captured bases from the board."""
+		from src.board import Base, Bases, Board
+		from src.player import Player
+
+	#	A random board.
+		board = Board.random(
+			size=2,
+			board_seed=0,
+			emptiness=1,
+		)
+
+	#	The players.
+		black = Player(
+			name="Foo",
+			color="black",
+			board=board,
+		)
+
+	#	Assert black originally has base in the corner.
+		assert Base(
+			{
+				board[-2, +2],
+				board[-1, +2],
+			}
+		) in black.bases
+
+	#	Remove base in the corner.
+		black.kill()
+
+	#	Assert black no longer has base in the corner.
+		assert Base(
+			{
+				board[-2, +2],
+				board[-1, +2],
+			}
+		) not in black.bases
+
 
 class TestBoard:
 	"""Test board creation and handling."""
@@ -125,6 +164,7 @@ class TestBoard:
 		board = Board.random(
 			size=9,
 			board_seed=9,
+			emptiness=2,
 		)
 
 	#	Save random board.
@@ -142,6 +182,7 @@ class TestBoard:
 		board = Board.random(
 			size=2,
 			board_seed=2,
+			emptiness=2,
 		)
 
 	#	Check central stone:

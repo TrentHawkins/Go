@@ -103,23 +103,13 @@ class Board(Undirected):
 		return super(Board, self).__eq__(other) and all(stone.color == other[stone].color for stone in self)
 
 	@classmethod
-	def random(cls, size: int = 9, board_seed: int | None = None):
+	def random(cls, size: int = 9, board_seed: int | None = None, emptiness: int = 1):
 		"""Get a random board."""
 		seed(board_seed)
 
 		return cls(
 			size=size,
-			color=lambda: Color[
-				choice(
-					[
-						"white",
-						"empty",
-						"empty",
-						"black",
-					]
-				)
-			].name
-		)
+			color=lambda: Color[choice(["white", *["empty"] * emptiness, "black"])].name)
 
 	@classmethod
 	def load(cls, filename: str):
