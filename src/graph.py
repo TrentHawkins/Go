@@ -86,7 +86,7 @@ class Directed(Graph):
 
 	#	Remove self-edges.
 		for node in self:
-			self[node].discard(node)
+			self.__getitem__(node).discard(node)
 
 	def __setitem__(self, node: Node, neighborhood: Neighborhood | None = None):
 		"""Add node with a neighborhood of nodes by removing possible self-edge."""
@@ -202,8 +202,8 @@ class Directed(Graph):
 	def clear(self):
 		"""Clear unused (disconnected) nodes."""
 		for node in self.copy():
-			if not self[node]:
-				del self[node]
+			if not self.__getitem__(node):
+				super().__delitem__(node)
 
 	"""Backend methods for operations:
 		union/update: Unite graph with another.
@@ -263,7 +263,7 @@ class Directed(Graph):
 	def issuperset(self, other):
 		"""Check if the current graph is a supergraph of the other graph."""
 		return Neighborhood(self.keys()).issuperset(Neighborhood(other.keys())) \
-			and all(self[node].issuperset(other.get(node)) for node in self)
+			and all(self.__getitem__(node).issuperset(other.get(node)) for node in self)
 
 	"""Graph special methods:
 		edge_list: List edges in graph as pairs of connected nodes.
@@ -275,7 +275,7 @@ class Directed(Graph):
 	@property
 	def edge_list(self) -> Edges:
 		"""List edges in graph as pairs of connected nodes."""
-		return Edges((node, adjacent_node) for node in self for adjacent_node in self[node])
+		return Edges((node, adjacent_node) for node in self for adjacent_node in self.__getitem__(node))
 
 	def cluster(self, node: Node, condition: Condition = lambda _: True) -> Nodes:
 		"""Get cluster node belong to."""
@@ -298,7 +298,7 @@ class Directed(Graph):
 
 	def boundary(self, cluster: Nodes) -> Nodes:
 		"""Get all nodes not in the cluster but connected to it, matching condition."""
-		return Nodes().union(*(self[node] for node in cluster)).difference(cluster)
+		return Nodes().union(*(self.__getitem__(node) for node in cluster)).difference(cluster)
 
 
 class Undirected(Directed):
@@ -337,7 +337,7 @@ class Undirected(Directed):
 
 	#	Remove symmetric edges.
 		for adjacent_node in neighborhood:
-			self[adjacent_node].discard(node)  # Remove traces of node in adjacent nodes.
+			super().__getitem__(adjacent_node).discard(node)  # Remove traces of node in adjacent nodes.
 
 		return neighborhood
 

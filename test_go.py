@@ -21,11 +21,11 @@ class TestBoard:
 		board = Board()
 
 	#	Make some changes.
-		board[Stone(+0, +0, size=board.size, color="white")] = board[Stone(+0, +0, size=board.size)]
-		board[Stone(+1, +0, size=board.size, color="black")] = board[Stone(+1, +0, size=board.size)]
-		board[Stone(+0, +1, size=board.size, color="black")] = board[Stone(+0, +1, size=board.size)]
-		board[Stone(-1, +0, size=board.size, color="black")] = board[Stone(-1, +0, size=board.size)]
-		board[Stone(+0, -1, size=board.size, color="black")] = board[Stone(+0, -1, size=board.size)]
+		board[+0, +0] = "white"
+		board[+1, +0] = "black"
+		board[+0, +1] = "black"
+		board[-1, +0] = "black"
+		board[+0, -1] = "black"
 
 	#	Save board.
 		board.save("test.board")
