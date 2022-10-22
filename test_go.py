@@ -14,18 +14,39 @@ class TestBoard:
 
 	def test_io(self):
 		"""Test saving the board state."""
+		from random import randint
+
 		from src.board import Board
-		from src.stone import Stone
+		from src.stone import Color
 
 	#	Use a simple board.
 		board = Board()
 
-	#	Make some changes.
-		board[+0, +0] = "white"
-		board[+1, +0] = "black"
-		board[+0, +1] = "black"
-		board[-1, +0] = "black"
-		board[+0, -1] = "black"
+	#	Make some random changes.
+		for _ in range(board.size ** 3):
+			rank = randint(
+				-board.size,
+				+board.size,
+			)
+			file = randint(
+				-board.size,
+				+board.size,
+			)
+			board[
+				randint(
+					-board.size,
+					+board.size,
+				),
+				randint(
+					-board.size,
+					+board.size,
+				),
+			] = Color(
+				randint(
+					-1,
+					+1,
+				),
+			)
 
 	#	Save board.
 		board.save("test.board")
