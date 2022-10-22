@@ -3,7 +3,7 @@
 	"python.linting.pycodestyleArgs":
 	[
 		"--max-line-length=132",
-		"--ignore=E265,W191",
+		"--ignore=E265,W191,W503,W504",
 	],
 
 //  repo-specific testing:
