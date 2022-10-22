@@ -5,7 +5,7 @@ to be insufficient, extra stones will be used.
 """
 
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum, unique
 from typing import ClassVar
 
@@ -56,7 +56,7 @@ class Stone(Point):
 		Point(+0, -1),  # south
 	}
 
-	color: Color | str = Color.empty
+	color: Color | str = field(default=Color.empty)
 
 	def __post_init__(self):
 		"""Translate color name to color."""

@@ -5,7 +5,7 @@ adjacent if they are distinct and connected by a horizontal or vertical line wit
 """
 
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -23,9 +23,9 @@ class Point:
 			default: The standard Go board size.
 	"""
 
-	file: int  # Ranges from -size to +size.
-	rank: int  # Ranges from -size to +size.
-	size: int = 9  # True size of the board is always an odd number (2 * size + 1).
+	file: int = field()  # Ranges from -size to +size.
+	rank: int = field()  # Ranges from -size to +size.
+	size: int = field(default=9)  # True size of the board is always an odd number (2 * size + 1).
 
 	def __post_init__(self):
 		"""Size must be positive."""
