@@ -10,9 +10,13 @@ The board file format starts with a board descriptor line, followed by a flag.
 from operator import attrgetter
 from typing import Callable
 
-from .graph import Neighborhood, Undirected
+from .graph import Cluster, Clusters, Neighborhood, Undirected
 from .point import Point
 from .stone import Color, Stone
+
+Base = Cluster
+Bases = Clusters
+Stones = set[Stone]
 
 
 class Board(Undirected):

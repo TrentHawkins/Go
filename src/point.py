@@ -35,25 +35,23 @@ class Point:
 		"""Hash by rank and file."""
 		return hash(
 			(
-				self.file + self.size,
-				self.rank + self.size,
+				self.file + 50,
+				self.rank + 50,
 			)
-		)  # HACK: Avoid CPython's `hash(-2) == hash(-1)`!
+		)  # HACK: Avoid CPython's `hash(-2) == hash(-1)`, the offset has to be constant, no boards above size 50 are expected!
 
 	def __eq__(self, other):
 		"""Equate by rank and file only."""
 		return (
 			self.file == other.file and
-			self.rank == other.rank and
-			self.size == other.size
+			self.rank == other.rank
 		)
 
 	def __ne__(self, other):
 		"""Equate by rank and file only."""
 		return (
 			self.file != other.file or
-			self.rank != other.rank or
-			self.size != other.size
+			self.rank != other.rank
 		)
 
 	def __bool__(self) -> bool:
