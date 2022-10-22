@@ -62,6 +62,31 @@ class Board(Undirected):
 		"""Draw a board."""
 		return "\n" + "".join(str(stone) for stone in sorted(self, key=attrgetter("rank", "file")))
 
+	def __setitem__(self, point: Point | tuple[int, int], color: Color | str = "empty"):
+		"""Place stone on the board. Changing the graph is meaningless at user level."""
+		point = Point(*point) if isinstance(point, tuple) else point
+		color = Color[color] if isinstance(color, str) else color
+		stone = Stone(**vars(point), color=color)
+
+		super().__setitem__(stone, super().__getitem__(point))
+
+	def __getitem__(self, point: Point | tuple[int, int]) -> Stone:
+		"""Get color of stone. Getting its graph neighbothood is meaningless at user level."""
+		point = Point(*point) if isinstance(point, tuple) else point
+
+		for stone in self:
+			if point == stone:
+				return stone.color.name  # type: ignore
+
+		else:
+			raise KeyError("Stone is not on the board.")
+
+	def __delitem__(self, point: Point | tuple[int, int]):
+		"""Remove stone from the board. Deletting it from the graph is meaningless at user level."""
+		point = Point(*point) if isinstance(point, tuple) else point
+
+		self.__setitem__(point)
+
 	@classmethod
 	def load(cls, filename: str):
 		"""Load board state from file."""
@@ -77,25 +102,3 @@ class Board(Undirected):
 		"""Save board state to file."""
 		with open(filename, mode="wt", encoding="utf-8") as board:
 			board.write(f"{self.size}\n{self}")
-
-	def __setitem__(self, point: Point | tuple[int, int], color: Color | str = "empty"):
-		"""Place stone on the board. Changing the graph is meaningless at user level."""
-		point = Point(*point) if isinstance(point, tuple) else point
-		color = Color[color] if isinstance(color, str) else color
-		stone = Stone(**vars(point), color=color)
-
-		super().__setitem__(stone, super().__getitem__(point))
-
-	def __getitem__(self, point: Point | tuple[int, int]):
-		"""Get color of stone. Getting its graph neighbothood is meaningless at user level."""
-		point = Point(*point) if isinstance(point, tuple) else point
-
-		for stone in self:
-			if point == stone:
-				return stone
-
-	def __delitem__(self, point: Point | tuple[int, int]):
-		"""Remove stone from the board. Deletting it from the graph is meaningless at user level."""
-		point = Point(*point) if isinstance(point, tuple) else point
-
-		self.__setitem__(point)
