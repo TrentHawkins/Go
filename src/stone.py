@@ -28,9 +28,13 @@ class Color(IntEnum):
 			self.white: "\U000026AA",
 		}[self]
 
+	def __bool__(self):
+		"""Is false if empty."""
+		return self.value != 0
+
 	def __ne__(self, other) -> bool:
 		"""Empty squares are foes with one another."""
-		return abs(self - other) == 2
+		return abs(self.value - other.value) == 2
 
 	@classmethod
 	def _missing_(cls, _):

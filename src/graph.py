@@ -26,9 +26,9 @@ Undirected graph requires overriding some methods to account for symmetric edges
 """
 
 
-from typing import Callable, Hashable
+from typing import Any, Callable
 
-Node = Hashable  # Node type to be hashable to be used as keys.
+Node = Any  # Node type to be hashable to be used as keys.
 Nodes = frozenset[Node]  # A cluster of nodes.
 Cluster = Nodes
 Clusters = set[Cluster]  # A collection of clusters.

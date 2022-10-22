@@ -14,9 +14,10 @@ from .graph import Cluster, Clusters, Neighborhood, Undirected
 from .point import Point
 from .stone import Color, Stone
 
-Base = Cluster
-Bases = Clusters
-Stones = set[Stone]
+Stones = frozenset[Stone]
+
+Base = Stones
+Bases = set[Base]
 
 
 class Board(Undirected):
@@ -106,3 +107,7 @@ class Board(Undirected):
 		"""Save board state to file."""
 		with open(filename, mode="wt", encoding="utf-8") as board:
 			board.write(f"{self.size}\n{self}")
+
+	def liberties(self, base: Base) -> Stones:
+		"""Get all empty intersections at the boundary of cluster (base)."""
+		return Stones(stone for stone in self.boundary(base) if not stone.color)
