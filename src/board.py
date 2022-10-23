@@ -8,7 +8,7 @@ The board file format starts with a board descriptor line, followed by a flag.
 
 
 from operator import attrgetter
-from random import choice, randint, seed
+from random import choice, seed
 from typing import Callable
 
 from .graph import Neighborhood, Undirected
@@ -73,11 +73,10 @@ class Board(Undirected):
 		"""Draw a board."""
 		return "\n" + "".join(str(stone) for stone in sorted(self, key=attrgetter("rank", "file")))
 
-	def __setitem__(self, point: Point | tuple[int, int], color: Color | str = "empty"):
+	def __setitem__(self, point: Point | tuple[int, int], stone: Stone | str = "empty"):
 		"""Place stone on the board. Changing the graph is meaningless at user level."""
 		point = Point(*point) if isinstance(point, tuple) else point
-		color = Color[color] if isinstance(color, str) else color
-		stone = Stone(**vars(point), color=color)
+		stone = Stone(**vars(point), color=stone) if isinstance(stone, str) else stone
 
 		super(Board, self).__setitem__(stone, super(Board, self).__getitem__(point))
 
@@ -101,6 +100,14 @@ class Board(Undirected):
 	def __eq__(self, other):
 		"""Is necessary since stones are indistinguishable."""
 		return super(Board, self).__eq__(other) and all(stone.color == other[stone].color for stone in self)
+
+	def add(self, stone: Stone):
+		"""More meaningful setter."""
+		super(Board, self).__setitem__(stone, super(Board, self).__getitem__(stone))
+
+	def remove(self, stone: Stone):
+		"""More meaningful deleter."""
+		self.__getitem__(stone).color = Color.empty
 
 	@classmethod
 	def random(cls, size: int = 9, board_seed: int | None = None, emptiness: int = 1):

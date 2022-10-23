@@ -12,6 +12,8 @@ play begins, to compensate for the difference in strength.
 
 
 from dataclasses import dataclass, field
+from re import Pattern, compile
+from typing import ClassVar
 
 from .board import Base, Bases, Board
 from .stone import Color, Stone
@@ -30,14 +32,24 @@ class Player:
 		board: The player is playing on.
 	"""
 
+#	Player's name.
 	name: str = field(default_factory=input)
 
+#	Player's color and board.
 	color: Color | str = field(default=Color.empty)
 	board: Board = field(default_factory=Board)
+
+#	Pass flag.
+	passed: bool = field(default=False)
+
+#	Legal moves based on linked board.
+	moves: Pattern = field(init=False)
 
 	def __post_init__(self):
 		"""Translate player's color name to color."""
 		self.color = Color[self.color] if isinstance(self.color, str) else self.color
+		self.moves = compile(f"([-+][0-{self.board.size}])([-+][0-{self.board.size}])")
+
 		self.color_similarity = lambda stone: stone.color == self.color
 
 	def base(self, stone: Stone) -> Base:
@@ -48,6 +60,36 @@ class Player:
 	def bases(self) -> Bases:
 		"""Get bases belonging to player."""
 		return self.board.clusters(condition=self.color_similarity)
+
+	def move(self) -> Stone | None:
+		"""Read move from standard input."""
+		message = "your turn"
+		move = input(f"{self.name}, {message}: ")
+
+		while True:
+			if move == "pass":
+				self.passed = True
+
+				break
+
+			place = self.moves.match(move)
+
+		#	If move is a legit move (proper format and room on the board).
+			if place:
+				stone = Stone(*map(int, place.groups()), size=self.board.size, color=self.color)
+
+			#	If stone is placed on an empty intersection.
+				if self.board[stone]:
+					self.board.add(stone)
+
+				#	Prevent suicide.
+					if self.board.liberties(self.base(stone)):
+						return stone
+
+					else:
+						self.board.remove(stone)
+
+			message = "try again"
 
 	def kill(self):
 		"""Kill captured bases of player."""

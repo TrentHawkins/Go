@@ -44,7 +44,11 @@ Japanese call it a hanami (flower-viewing) ko.
 """
 
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from .board import Board
+from .player import Player
+from .stone import Stone
 
 
 @dataclass
@@ -98,4 +102,21 @@ class Go:
 	Winner: If one player has a higher score than the other, then that player wins. Otherwise, the game is a draw.
 	"""
 
-	...
+#	Board linkd to the game.
+	board: Board
+
+#	Players of the game.
+	white: Player = field()
+	black: Player = field()
+
+#	Pointer to current player in turn.
+	current: Player = field(init=False)
+
+#	History of the game states for the Ko rule.
+	history: list[Board]
+
+	def ko(self, stone: Stone):
+		"""Is placing stone triggering the Ko rule."""
+		self.board[stone] = stone
+		ko = self.board in self.history
+		del self.board[stone]
