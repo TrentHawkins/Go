@@ -133,7 +133,7 @@ class Go:
 
 	#	End game if both players pass consecutively.
 		if self.black.passed and self.white.passed:
-			exit("GAME OVER")
+			exit("\033[A\033[KGAME OVER")
 
 	#	Flip turn.
 		self.black, self.white = self.white, self.black
