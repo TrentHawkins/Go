@@ -13,10 +13,9 @@ play begins, to compensate for the difference in strength.
 
 from dataclasses import dataclass, field
 from re import Pattern, compile
-from typing import ClassVar
+from typing import Callable
 
 from .board import Base, Bases, Board
-from .graph import Graph
 from .stone import Color, Stone
 
 
@@ -33,22 +32,26 @@ class Player:
 		board: The player is playing on.
 	"""
 
-#	Player's color and board plus board state two turns ago (ko rule).
-	color: Color | str = field(default=Color.empty)
-	board: Board = field(default_factory=Board)
-	state: Board = field(default_factory=Board)
-
 #	Player's name.
 	name: str = field(default_factory=input)
+
+#	Player's color and board plus board state two turns ago (ko rule).
+	color: Color | str = field(default=Color.empty)
+
+#	The board plus board state two turns ago (ko rule).
+	board: Board = field(default_factory=Board)
+	state: Board = field(init=False)
 
 #	Legal moves based on linked board.
 	moves: Pattern = field(init=False)
 
-#	Pass flag.
+#	Pass and allegiance flags.
 	passed: bool = field(init=False)
+	color_similarity: Callable[[Stone], bool] = field(init=False)
 
 	def __post_init__(self):
 		"""Translate player's color name to color."""
+		self.state = Board(self.board.copy())
 		self.color = Color[self.color] if isinstance(self.color, str) else self.color
 		self.moves = compile(f"([-+][0-{self.board.size}])([-+][0-{self.board.size}])")
 		self.passed = False
@@ -64,25 +67,26 @@ class Player:
 		"""Get bases belonging to player."""
 		return self.board.clusters(condition=self.color_similarity)
 
-	def move(self) -> Stone | None:
+	def move(self):
 		"""Read move from standard input."""
 		message = "your turn"
-		move = input(f"{self.name}, {message}: ")
 
 	#	Reset pass status.
 		self.passed = False
 
 		while True:
-			if move == "pass":
+			entry = input(f"{self.name}, {message}: ")
+
+			if entry == "pass":
 				self.passed = True
 
-				break
+				return
 
-			place = self.moves.match(move)
+			move = self.moves.match(entry)
 
 		#	If move is a legit move (proper format and room on the board).
-			if place:
-				stone = Stone(*map(int, place.groups()), size=self.board.size, color=self.color)
+			if move:
+				stone = Stone(*map(int, move.groups()), size=self.board.size, color=self.color)
 
 			#	If stone is placed on an empty intersection.
 				if self.board[stone].empty:
@@ -95,7 +99,7 @@ class Player:
 					else:
 						self.state = Board(self.board.copy())
 
-						return stone
+						return
 
 			message = "\033[Atry again"
 

@@ -104,14 +104,14 @@ class Go:
 	Winner: If one player has a higher score than the other, then that player wins. Otherwise, the game is a draw.
 	"""
 
-#	Players of the game.
-	black: Player = field(default=Player(color="black", name="Foo"))
-	white: Player = field(default=Player(color="white", name="Bar"))
-
-	players: cycle = field(init=False)
-
 #	Board linked to the game.
 	board: Board = field(default_factory=Board)
+
+#	Players of the game.
+	black: Player = field(default=Player(board=board, color="black", name="Foo"))
+	white: Player = field(default=Player(board=board, color="white", name="Bar"))
+
+	players: cycle = field(init=False)
 
 	def __post_init__(self):
 		"""Set player cycle."""
@@ -122,7 +122,7 @@ class Go:
 			]
 		)
 
-	def __repr__(self):
+	def __str__(self):
 		"""Display current game state."""
 		return f"\033[H\033[J{self.__class__.__name__}: {datetime.today().replace(microsecond=0)}\n{self.board}"
 

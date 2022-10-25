@@ -58,7 +58,7 @@ class Board(Undirected):
 				super(Board, self).__setitem__(stone)
 
 	#	Then set their neighborhoods, so that they are up to date.
-		for stone in self.copy():
+		for stone in super(Board, self).copy():
 			neighborhood = Neighborhood()
 
 			for adjacent_point in stone.adjacencies:
@@ -128,6 +128,11 @@ class Board(Undirected):
 				return output if not output.isspace() else read_strip(size)
 
 			return cls(size=int(read_strip(1)), color=lambda: Color(read_strip(1)).name)
+
+	def copy(self):
+		"""Return a copy of the board."""
+		color = (stone.color for stone in self)
+		return self.__class__(size=self.size, color=lambda: next(color))
 
 	def save(self, filename: str):
 		"""Save board state to file."""

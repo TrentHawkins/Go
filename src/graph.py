@@ -202,7 +202,7 @@ class Directed(Graph):
 
 	def clear(self):
 		"""Clear unused (disconnected) nodes."""
-		for node in self.copy():
+		for node in super(Directed, self).copy():
 			if not super(Directed, self).__getitem__(node):
 				super(Directed, self).__delitem__(node)
 
@@ -222,7 +222,7 @@ class Directed(Graph):
 
 	def union(self, other):
 		"""Unite graph with another."""
-		undirected = self.__class__(self.copy())
+		undirected = self.__class__(super(Directed, self).copy())
 		undirected.update(other)
 
 		return undirected
@@ -234,7 +234,7 @@ class Directed(Graph):
 
 	def difference(self, other):
 		"""Subtract graph from current."""
-		undirected = self.__class__(self.copy())
+		undirected = self.__class__(super(Directed, self).copy())
 		undirected.difference_update(other)
 
 		return undirected
@@ -300,7 +300,7 @@ class Directed(Graph):
 
 	def clusters(self, condition: Condition = lambda _: True) -> Clusters:
 		"""List disjoint subgraphs of inter-connected nodes, matching condition."""
-		clusters = Clusters(self.cluster(node, condition) for node in self.copy())
+		clusters = Clusters(self.cluster(node, condition) for node in super(Directed, self).copy())
 
 	#	Remove the empty cluster that is present for non-default condition.
 		clusters.discard(Cluster())
@@ -323,7 +323,7 @@ class Undirected(Directed):
 		super(Undirected, self).__init__(*args, **kwargs)
 
 	#	Add missing symmetric edges.
-		self.update(self.copy())
+		self.update(super(Undirected, self).copy())
 
 	def __delitem__(self, node: Node):
 		"""Delete node with its neighborhood of nodes and all symmetric edges. Node has exist."""
