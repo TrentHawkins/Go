@@ -51,11 +51,14 @@ class Player:
 
 	def __post_init__(self):
 		"""Translate player's color name to color."""
-		self.state = Board(self.board.copy())
 		self.color = Color[self.color] if isinstance(self.color, str) else self.color
 		self.moves = compile(f"([-+][0-{self.board.size}])([-+][0-{self.board.size}])")
 		self.passed = False
 
+	#	First copy of the board is 0 turns back but it will pass the ko rule upon first move, as the board will definitely change.
+		self.state = self.board.copy()
+
+	#	For getting liberties and performing captures.
 		self.color_similarity = lambda stone: stone.color == self.color
 
 	def base(self, stone: Stone) -> Base:
@@ -74,34 +77,46 @@ class Player:
 	#	Reset pass status.
 		self.passed = False
 
+	#	Prompt alignment:
+		print()
+
 		while True:
-			entry = input(f"{self.name}, {message}: ")
+			try:
+				entry = input(f"\033[A{self.name}, {message}: \033[K")
 
-			if entry == "pass":
-				self.passed = True
+			#	Register player's intnetion to pass.
+				if entry == "pass":
+					self.passed = True
 
-				return
+					return
 
-			move = self.moves.match(entry)
+			#	Catch move.
+				move = self.moves.match(entry)
 
-		#	If move is a legit move (proper format and room on the board).
-			if move:
-				stone = Stone(*map(int, move.groups()), size=self.board.size, color=self.color)
+			#	If move is a legit move (proper format and room on the board).
+				if move:
+					stone = Stone(*map(int, move.groups()), size=self.board.size, color=self.color)
 
-			#	If stone is placed on an empty intersection.
-				if self.board[stone].empty:
-					self.board.put(stone)
+				#	If stone is placed on an empty intersection.
+					if self.board[stone].empty:
+						self.state = self.board.copy()
+						self.board.put(stone)
 
-				#	Prevent suicide and ko.
-					if not self.board.liberties(self.base(stone)) or (self.state and self.board == self.state):
-						self.board.remove(stone)
+					#	Prevent suicide and ko.
+						if not self.board.liberties(self.base(stone)) or (self.state and self.board == self.state):
+							self.board.remove(stone)
 
-					else:
-						self.state = Board(self.board.copy())
+					#	Successfully register move.
+						else:
+							return
 
-						return
+			except EOFError:
+				print()
+				message = "try again"
 
-			message = "\033[Atry again"
+				continue
+
+			message = "try again"
 
 	def kill(self):
 		"""Kill captured bases of player."""

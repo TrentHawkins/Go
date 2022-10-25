@@ -38,13 +38,13 @@ class Board(Undirected):
 		range: The whole board.
 	"""
 
-	def __init__(self, other: Graph | None = None, size: int = 9, color: Callable[[], str] = lambda: "empty"):
+	def __init__(self, size: int = 9, color: Callable[[], str] = lambda: "empty"):
 		"""Build board."""
 		self.size: int = size
 		self.range: range = range(-self.size, self.size + 1)
 
 	#	Initialize empty board.
-		super().__init__(other) if other else super().__init__()
+		super().__init__()
 
 	#	First add the nodes blank.
 		for rank in self.range:
@@ -132,7 +132,7 @@ class Board(Undirected):
 	def copy(self):
 		"""Return a copy of the board."""
 		color = (stone.color for stone in self)
-		return self.__class__(size=self.size, color=lambda: next(color))
+		return Board(size=self.size, color=lambda: next(color))
 
 	def save(self, filename: str):
 		"""Save board state to file."""

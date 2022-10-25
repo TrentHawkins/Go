@@ -108,19 +108,16 @@ class Go:
 	board: Board = field(default_factory=Board)
 
 #	Players of the game.
-	black: Player = field(default=Player(board=board, color="black", name="Foo"))
-	white: Player = field(default=Player(board=board, color="white", name="Bar"))
+	black: Player = field(default=Player(color="black", name="Foo"))
+	white: Player = field(default=Player(color="white", name="Bar"))
 
+#	Player turns.
 	players: cycle = field(init=False)
 
 	def __post_init__(self):
-		"""Set player cycle."""
-		self.players = cycle(
-			[
-				self.black,
-				self.white,
-			]
-		)
+		"""Set players' board."""
+		self.black.board = self.board
+		self.white.board = self.board
 
 	def __str__(self):
 		"""Display current game state."""
@@ -128,13 +125,15 @@ class Go:
 
 	def turn(self):
 		"""Play a turn."""
-		current: Player = next(self.players)
-
-	#	Print game state.
 		print(self)
 
 	#	Read next move.
-		current.move()
+		self.black.move()
+		self.white.kill()
 
+	#	End game if both players pass consecutively.
 		if self.black.passed and self.white.passed:
 			exit("GAME OVER")
+
+	#	Flip turn.
+		self.black, self.white = self.white, self.black
