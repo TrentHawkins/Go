@@ -1,7 +1,16 @@
 {
+//  repo-specific linting:
+	"python.linting.pycodestyleArgs":
+	[
+		"--max-line-length=132",
+		"--ignore=E265,W191,W503,W504",
+	],
+
+//  repo-specific testing:
     "python.testing.pytestArgs": [
-        "."
+        ".",
+		"-vv",
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
 }

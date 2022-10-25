@@ -5,64 +5,82 @@ to be insufficient, extra stones will be used.
 """
 
 
-from dataclasses import dataclass
-from enum import IntFlag, unique
-from typing import Hashable
+from dataclasses import dataclass, field
+from enum import Enum, unique
+from typing import ClassVar
 
-from .intersection import Intersection
+from .point import Point
 
 
 @unique
-class Color(IntFlag):
-    """Color of an intersection."""
+class Color(Enum):
+	"""Color of an intersection."""
 
-    black = +1
-    empty = 00
-    white = -1
+	black = "\U000026AB"
+	empty = "\U0001F7E4"
+	white = "\U000026AA"
 
-    def __repr__(self) -> str:
-        """Each color is actually a puc."""
-        return {
-            +1: "\U000026AB",
-            00: "\U0001F7E4",
-            -1: "\U000026AA",
-        }[self]
+	def __str__(self) -> str:
+		"""Each color is actually a puc."""
+		return self.value
 
-    def __ne__(self, other) -> bool:
-        """Empty squares are foes with one another."""
-        return abs(self - other) == 2
+	def __bool__(self):
+		"""Is false if empty."""
+		return self != self.empty
+
+	@classmethod
+	def _missing_(cls, _):
+		return cls.empty
 
 
-@dataclass(repr=False, eq=False)
-class Stone(Intersection):
-    """A stone.
+@dataclass(eq=False)
+class Stone(Point):
+	"""A stone.
 
-    Go is played with playing tokens known as stones.
-    Each player has at their disposal an adequate supply of stones of their color.
+	Go is played with playing tokens known as stones.
+	Each player has at their disposal an adequate supply of stones of their color.
 
-    Attributes:
-        color: Allegiance of stone.
-        point: Intersection the stone is on (irrelevant on which board.
-    """
+	Attributes:
+		color: Allegiance of stone.
+			default: Empty.
+	"""
 
-    color: Color | str = Color.empty
+	adjacencies: ClassVar[set[Point]] = {
+		Point(+1, +0),  # east
+		Point(+0, +1),  # north
+		Point(-1, +0),  # west
+		Point(+0, -1),  # south
+	}
 
-    def __post_init__(self):
-        """Translate descriptive input."""
-        self.color = Color[self.color] if isinstance(self.color, str) else self.color
+	color: Color | str = field(default=Color.empty)
 
-    def __repr__(self):
-        """Assume color appearance."""
-        return repr(self.color)
+	def __post_init__(self):
+		"""Translate color name to color."""
+		self.color = Color[self.color] if isinstance(self.color, str) else self.color
 
-    def __hash__(self):
-        """Hash only based on intersection."""
-        return super(Stone, self).__hash__()
+	def __str__(self):
+		"""Assume color appearance."""
+		return str(self.color) + "\n" if self.file == self.size else str(self.color)
 
-    def __eq__(self, other):
-        """Compare based on allegiance only."""
-        return self.color == other.color
+	def __bool__(self) -> bool:
+		"""Stone must be within board boundaries and empty."""
+		return super().__bool__()
 
-    def __ne__(self, other):
-        """Compare based on allegiance only."""
-        return self.color != other.color
+	def __add__(self, other: Point):
+		f"""Shift stone by intersection."""
+		return self.__class__(
+			self.file + other.file,
+			self.rank + other.rank, size=self.size, color=self.color
+		)
+
+	def __sub__(self, other: Point):
+		f"""Shift stone by intersection."""
+		return self.__class__(
+			self.file - other.file,
+			self.rank - other.rank, size=self.size, color=self.color
+		)
+
+	@property
+	def empty(self):
+		"""Is intersection empty."""
+		return self.color == Color.empty

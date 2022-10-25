@@ -11,11 +11,117 @@ play begins, to compensate for the difference in strength.
 """
 
 
+from dataclasses import dataclass, field
+from re import Pattern, compile
+from typing import Callable
+
+from .board import Base, Bases, Board
+from .stone import Color, Stone
+
+
+@dataclass
 class Player:
-    """A player.
+	"""A player.
 
-    Contains the clusters of the board graph belonging to the player.
-    Via mutability tricks, the clusters still have access to neighborhoods on the whole board to use as liberties.
-    """
+	Contains the clusters of the board graph belonging to the player.
+	Via mutability tricks, the clusters still have access to neighborhoods on the whole board to use as liberties.
 
-    ...
+	Attributes:
+		name: Of player.
+		color: Of player's stones.
+		board: The player is playing on.
+	"""
+
+#	Player's name.
+	name: str = field(default_factory=input)
+
+#	Player's color and board plus board state two turns ago (ko rule).
+	color: Color | str = field(default=Color.empty)
+
+#	The board plus board state two turns ago (ko rule).
+	board: Board = field(default_factory=Board)
+	state: Board = field(init=False)
+
+#	Legal moves based on linked board.
+	moves: Pattern = field(init=False)
+
+#	Pass and allegiance flags.
+	passed: bool = field(init=False)
+	color_similarity: Callable[[Stone], bool] = field(init=False)
+
+	def __post_init__(self):
+		"""Translate player's color name to color."""
+		self.color = Color[self.color] if isinstance(self.color, str) else self.color
+		self.moves = compile(f"([-+][0-{self.board.size}])([-+][0-{self.board.size}])")
+		self.passed = False
+
+	#	First copy of the board is 0 turns back but it will pass the ko rule upon first move, as the board will definitely change.
+		self.state = self.board.copy()
+
+	#	For getting liberties and performing captures.
+		self.color_similarity = lambda stone: stone.color == self.color
+
+	def base(self, stone: Stone) -> Base:
+		"""Get base stone belongs to."""
+		return self.board.cluster(stone, condition=self.color_similarity)
+
+	@property
+	def bases(self) -> Bases:
+		"""Get bases belonging to player."""
+		return self.board.clusters(condition=self.color_similarity)
+
+	def move(self):
+		"""Read move from standard input."""
+		message = "your turn"
+
+	#	Reset pass status.
+		self.passed = False
+
+	#	Prompt alignment:
+		print()
+
+		while True:
+			try:
+				entry = input(f"\033[A{self.name}, {message}: \033[K")
+
+			#	Register player's intnetion to pass.
+				if entry == "pass":
+					self.passed = True
+
+					return
+
+			#	Catch move.
+				move = self.moves.match(entry)
+
+			#	If move is a legit move (proper format and room on the board).
+				if move:
+					stone = Stone(*map(int, move.groups()), size=self.board.size, color=self.color)
+
+				#	If stone is placed on an empty intersection.
+					if self.board[stone].empty:
+						self.state = self.board.copy()
+						self.board.put(stone)
+
+					#	Prevent suicide and ko.
+						if not self.board.liberties(self.base(stone)) or (self.state and self.board == self.state):
+							self.board.remove(stone)
+
+					#	Successfully register move.
+						else:
+							return
+
+			except EOFError:
+				print()
+				message = "try again"
+
+				continue
+
+			message = "try again"
+
+	def kill(self):
+		"""Kill captured bases of player."""
+		for base in self.bases:
+			if not self.board.liberties(base):
+				for stone in base:
+					del stone.color
+					del self.board[stone]
