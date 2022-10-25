@@ -16,6 +16,7 @@ from re import Pattern, compile
 from typing import ClassVar
 
 from .board import Base, Bases, Board
+from .graph import Graph
 from .stone import Color, Stone
 
 
@@ -32,23 +33,25 @@ class Player:
 		board: The player is playing on.
 	"""
 
+#	Player's color and board plus board state two turns ago (ko rule).
+	color: Color | str = field(default=Color.empty)
+	board: Board = field(default_factory=Board)
+	state: Board = field(default_factory=Board)
+
 #	Player's name.
 	name: str = field(default_factory=input)
 
-#	Player's color and board.
-	color: Color | str = field(default=Color.empty)
-	board: Board = field(default_factory=Board)
-
-#	Pass flag.
-	passed: bool = field(default=False)
-
 #	Legal moves based on linked board.
 	moves: Pattern = field(init=False)
+
+#	Pass flag.
+	passed: bool = field(init=False)
 
 	def __post_init__(self):
 		"""Translate player's color name to color."""
 		self.color = Color[self.color] if isinstance(self.color, str) else self.color
 		self.moves = compile(f"([-+][0-{self.board.size}])([-+][0-{self.board.size}])")
+		self.passed = False
 
 		self.color_similarity = lambda stone: stone.color == self.color
 
@@ -66,6 +69,9 @@ class Player:
 		message = "your turn"
 		move = input(f"{self.name}, {message}: ")
 
+	#	Reset pass status.
+		self.passed = False
+
 		while True:
 			if move == "pass":
 				self.passed = True
@@ -79,17 +85,19 @@ class Player:
 				stone = Stone(*map(int, place.groups()), size=self.board.size, color=self.color)
 
 			#	If stone is placed on an empty intersection.
-				if self.board[stone]:
-					self.board.add(stone)
+				if self.board[stone].empty:
+					self.board.put(stone)
 
-				#	Prevent suicide.
-					if self.board.liberties(self.base(stone)):
-						return stone
-
-					else:
+				#	Prevent suicide and ko.
+					if not self.board.liberties(self.base(stone)) or (self.state and self.board == self.state):
 						self.board.remove(stone)
 
-			message = "try again"
+					else:
+						self.state = Board(self.board.copy())
+
+						return stone
+
+			message = "\033[Atry again"
 
 	def kill(self):
 		"""Kill captured bases of player."""

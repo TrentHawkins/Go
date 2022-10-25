@@ -11,7 +11,7 @@ from operator import attrgetter
 from random import choice, seed
 from typing import Callable
 
-from .graph import Neighborhood, Undirected
+from .graph import Graph, Neighborhood, Undirected
 from .point import Point
 from .stone import Color, Stone
 
@@ -38,13 +38,13 @@ class Board(Undirected):
 		range: The whole board.
 	"""
 
-	def __init__(self, size: int = 9, color: Callable[[], str] = lambda: "empty"):
+	def __init__(self, other: Graph | None = None, size: int = 9, color: Callable[[], str] = lambda: "empty"):
 		"""Build board."""
 		self.size: int = size
 		self.range: range = range(-self.size, self.size + 1)
 
 	#	Initialize empty board.
-		super(Board, self).__init__()
+		super(Board, self).__init__(other) if other else super(Board, self).__init__()
 
 	#	First add the nodes blank.
 		for rank in self.range:
@@ -101,7 +101,7 @@ class Board(Undirected):
 		"""Is necessary since stones are indistinguishable."""
 		return super(Board, self).__eq__(other) and all(stone.color == other[stone].color for stone in self)
 
-	def add(self, stone: Stone):
+	def put(self, stone: Stone):
 		"""More meaningful setter."""
 		super(Board, self).__setitem__(stone, super(Board, self).__getitem__(stone))
 

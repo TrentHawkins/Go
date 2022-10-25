@@ -62,9 +62,13 @@ class Stone(Point):
 		"""Assume color appearance."""
 		return str(self.color) + "\n" if self.file == self.size else str(self.color)
 
+	def __repr__(self):
+		"""Compact representation."""
+		return f"{self.file:+2d}{self.rank:+2d}{self.color}"
+
 	def __bool__(self) -> bool:
 		"""Stone must be within board boundaries and empty."""
-		return super(Stone, self).__bool__() and self.color == Color.empty
+		return super(Stone, self).__bool__()
 
 	def __add__(self, other: Point):
 		f"""Shift stone by intersection."""
@@ -79,3 +83,8 @@ class Stone(Point):
 			self.file - other.file,
 			self.rank - other.rank, size=self.size, color=self.color
 		)
+
+	@property
+	def empty(self):
+		"""Is intersection empty."""
+		return self.color == Color.empty

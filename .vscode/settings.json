@@ -8,7 +8,8 @@
 
 //  repo-specific testing:
     "python.testing.pytestArgs": [
-        "."
+        ".",
+		"-vv",
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,

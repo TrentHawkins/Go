@@ -45,6 +45,8 @@ Japanese call it a hanami (flower-viewing) ko.
 
 
 from dataclasses import dataclass, field
+from datetime import datetime
+from itertools import cycle
 
 from .board import Board
 from .player import Player
@@ -102,21 +104,37 @@ class Go:
 	Winner: If one player has a higher score than the other, then that player wins. Otherwise, the game is a draw.
 	"""
 
-#	Board linkd to the game.
-	board: Board
-
 #	Players of the game.
-	white: Player = field()
-	black: Player = field()
+	black: Player = field(default=Player(color="black", name="Foo"))
+	white: Player = field(default=Player(color="white", name="Bar"))
 
-#	Pointer to current player in turn.
-	current: Player = field(init=False)
+	players: cycle = field(init=False)
 
-#	History of the game states for the Ko rule.
-	history: list[Board]
+#	Board linked to the game.
+	board: Board = field(default_factory=Board)
 
-	def ko(self, stone: Stone):
-		"""Is placing stone triggering the Ko rule."""
-		self.board[stone] = stone
-		ko = self.board in self.history
-		del self.board[stone]
+	def __post_init__(self):
+		"""Set player cycle."""
+		self.players = cycle(
+			[
+				self.black,
+				self.white,
+			]
+		)
+
+	def __repr__(self):
+		"""Display current game state."""
+		return f"\033[H\033[J{self.__class__.__name__}: {datetime.today().replace(microsecond=0)}\n{self.board}"
+
+	def turn(self):
+		"""Play a turn."""
+		current: Player = next(self.players)
+
+	#	Print game state.
+		print(self)
+
+	#	Read next move.
+		current.move()
+
+		if self.black.passed and self.white.passed:
+			exit("GAME OVER")

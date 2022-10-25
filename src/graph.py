@@ -285,6 +285,8 @@ class Directed(Graph):
 	#	If current node fails the condition, stop propagating.
 		if condition(node):
 			nodes.add(node)
+
+		#	Sweep nodes going forward.
 			neighborhood = self.pop(node)
 
 		#	Propagate through neighbors, conditioning will be applied on the nested level.
