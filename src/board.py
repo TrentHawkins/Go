@@ -44,7 +44,7 @@ class Board(Undirected):
 		self.range: range = range(-self.size, self.size + 1)
 
 	#	Initialize empty board.
-		super(Board, self).__init__(other) if other else super(Board, self).__init__()
+		super().__init__(other) if other else super().__init__()
 
 	#	First add the nodes blank.
 		for rank in self.range:
@@ -55,10 +55,10 @@ class Board(Undirected):
 					size=self.size, color=color()
 				)
 
-				super(Board, self).__setitem__(stone)
+				super().__setitem__(stone)
 
 	#	Then set their neighborhoods, so that they are up to date.
-		for stone in super(Board, self).copy():
+		for stone in super().copy():
 			neighborhood = Neighborhood()
 
 			for adjacent_point in stone.adjacencies:
@@ -67,7 +67,7 @@ class Board(Undirected):
 				if neighbor:
 					neighborhood.add(self[neighbor])
 
-			super(Board, self).__setitem__(stone, neighborhood)
+			super().__setitem__(stone, neighborhood)
 
 	def __str__(self) -> str:
 		"""Draw a board."""
@@ -78,7 +78,7 @@ class Board(Undirected):
 		point = Point(*point) if isinstance(point, tuple) else point
 		stone = Stone(**vars(point), color=stone) if isinstance(stone, str) else stone
 
-		super(Board, self).__setitem__(stone, super(Board, self).__getitem__(point))
+		super().__setitem__(stone, super().__getitem__(point))
 
 	def __getitem__(self, point: Point | tuple[int, int]) -> Stone:
 		"""Get color of stone. Getting its graph neighbothood is meaningless at user level."""
@@ -99,11 +99,11 @@ class Board(Undirected):
 
 	def __eq__(self, other):
 		"""Is necessary since stones are indistinguishable."""
-		return super(Board, self).__eq__(other) and all(stone.color == other[stone].color for stone in self)
+		return super().__eq__(other) and all(stone.color == other[stone].color for stone in self)
 
 	def put(self, stone: Stone):
 		"""More meaningful setter."""
-		super(Board, self).__setitem__(stone, super(Board, self).__getitem__(stone))
+		super().__setitem__(stone, super().__getitem__(stone))
 
 	def remove(self, stone: Stone):
 		"""More meaningful deleter."""

@@ -64,7 +64,7 @@ class Stone(Point):
 
 	def __bool__(self) -> bool:
 		"""Stone must be within board boundaries and empty."""
-		return super(Stone, self).__bool__()
+		return super().__bool__()
 
 	def __add__(self, other: Point):
 		f"""Shift stone by intersection."""

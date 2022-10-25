@@ -83,11 +83,11 @@ class Directed(Graph):
 
 	def __init__(self, *args, **kwargs):
 		"""Update graph by removing self-edges."""
-		super(Directed, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 	#	Remove self-edges.
 		for node in self:
-			super(Directed, self).__getitem__(node).discard(node)
+			super().__getitem__(node).discard(node)
 
 	def __setitem__(self, node: Node, neighborhood: Neighborhood | None = None):
 		"""Add node with a neighborhood of nodes by removing possible self-edge."""
@@ -190,11 +190,11 @@ class Directed(Graph):
 
 	def setdefault(self, node: Node, default_neighborhood: Neighborhood | None = None) -> Neighborhood:
 		"""Redefine dictionary `dict.setdefault` with empty neighborhood as default."""
-		return super(Directed, self).setdefault(node, default_neighborhood or Neighborhood())
+		return super().setdefault(node, default_neighborhood or Neighborhood())
 
 	def get(self, node: Node, default_neighborhood: Neighborhood | None = None) -> Neighborhood:
 		"""Redefine `get` with empty empty neighborhood as default."""
-		return super(Directed, self).get(node, default_neighborhood or Neighborhood())
+		return super().get(node, default_neighborhood or Neighborhood())
 
 	def add(self, node: Node, neighbohood: Neighborhood):
 		"""Add or update node with neighborhood."""
@@ -202,9 +202,9 @@ class Directed(Graph):
 
 	def clear(self):
 		"""Clear unused (disconnected) nodes."""
-		for node in super(Directed, self).copy():
-			if not super(Directed, self).__getitem__(node):
-				super(Directed, self).__delitem__(node)
+		for node in super().copy():
+			if not super().__getitem__(node):
+				super().__delitem__(node)
 
 	"""Backend methods for operations:
 		union/update: Unite graph with another.
@@ -222,7 +222,7 @@ class Directed(Graph):
 
 	def union(self, other):
 		"""Unite graph with another."""
-		undirected = self.__class__(super(Directed, self).copy())
+		undirected = self.__class__(super().copy())
 		undirected.update(other)
 
 		return undirected
@@ -234,7 +234,7 @@ class Directed(Graph):
 
 	def difference(self, other):
 		"""Subtract graph from current."""
-		undirected = self.__class__(super(Directed, self).copy())
+		undirected = self.__class__(super().copy())
 		undirected.difference_update(other)
 
 		return undirected
@@ -259,12 +259,12 @@ class Directed(Graph):
 	def issubset(self, other):
 		"""Check if the current graph is a subgraph of the other graph."""
 		return Neighborhood(self.keys()).issubset(Neighborhood(other.keys())) \
-			and all(super(Directed, self).__getitem__(node).issubset(other.__getitem__(node)) for node in self)
+			and all(super().__getitem__(node).issubset(other.__getitem__(node)) for node in self)
 
 	def issuperset(self, other):
 		"""Check if the current graph is a supergraph of the other graph."""
 		return Neighborhood(self.keys()).issuperset(Neighborhood(other.keys())) \
-			and all(super(Directed, self).__getitem__(node).issuperset(other.__getitem__(node)) for node in other)
+			and all(super().__getitem__(node).issuperset(other.__getitem__(node)) for node in other)
 
 	"""Graph special methods:
 		edge_list: List edges in graph as pairs of connected nodes.
@@ -300,7 +300,7 @@ class Directed(Graph):
 
 	def clusters(self, condition: Condition = lambda _: True) -> Clusters:
 		"""List disjoint subgraphs of inter-connected nodes, matching condition."""
-		clusters = Clusters(self.cluster(node, condition) for node in super(Directed, self).copy())
+		clusters = Clusters(self.cluster(node, condition) for node in super().copy())
 
 	#	Remove the empty cluster that is present for non-default condition.
 		clusters.discard(Cluster())
@@ -309,7 +309,7 @@ class Directed(Graph):
 
 	def boundary(self, cluster: Nodes) -> Nodes:
 		"""Get all nodes not in the cluster but connected to it, matching condition."""
-		return Nodes().union(*(super(Directed, self).__getitem__(node) for node in cluster)).difference(cluster)
+		return Nodes().union(*(super(self.__class__, self).__getitem__(node) for node in cluster)).difference(cluster)
 
 
 class Undirected(Directed):
@@ -320,10 +320,10 @@ class Undirected(Directed):
 
 	def __init__(self, *args, **kwargs):
 		"""Update graph with missing symmetric edges and by removing self-edges."""
-		super(Undirected, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 	#	Add missing symmetric edges.
-		self.update(super(Undirected, self).copy())
+		self.update(super().copy())
 
 	def __delitem__(self, node: Node):
 		"""Delete node with its neighborhood of nodes and all symmetric edges. Node has exist."""
@@ -344,16 +344,16 @@ class Undirected(Directed):
 
 	def pop(self, node: Node, default_neighborhood: Neighborhood | None = None) -> Neighborhood:  # type: ignore
 		"""Delete node with neighborhood and symmetric edges and return neighborhood."""
-		neighborhood = super(Undirected, self).pop(node, default_neighborhood or Neighborhood())
+		neighborhood = super().pop(node, default_neighborhood or Neighborhood())
 
 	#	Remove symmetric edges.
 		for adjacent_node in neighborhood:
-			super(Undirected, self).__getitem__(adjacent_node).discard(node)  # Remove traces of node in adjacent nodes.
+			super().__getitem__(adjacent_node).discard(node)  # Remove traces of node in adjacent nodes.
 
 		return neighborhood
 
 	def popitem(self) -> tuple[Node, Neighborhood]:
 		"""Delete last added node and neighborhood and return them."""
-		node, neighborhood = super(Undirected, self).popitem()
+		node, neighborhood = super().popitem()
 
 		return node, self.pop(node, neighborhood)  # Remove traces of popped node from adjacent nodes.
